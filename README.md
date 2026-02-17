@@ -40,11 +40,11 @@ Das Projekt demonstriert fortgeschrittene Konzepte der objektorientierten Progra
 
 ### Steuerung (Desktop)
 
-| Taste | Aktion |
-|-------|--------|
-| `←` / `→` | Bewegung links/rechts |
-| `Leertaste` | Springen |
-| `D` | Flasche werfen |
+| Taste       | Aktion                |
+|-------------|-----------------------|
+| `←` / `→`   | Bewegung links/rechts |
+| `Leertaste` | Springen              |
+| `D`         | Flasche werfen        |
 
 ### Steuerung (Mobile)
 
