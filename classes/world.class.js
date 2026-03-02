@@ -5,17 +5,34 @@ class World {
     ctx;
     keyboard;
     camera_x;
+    statusBarHealth = new StatusBar('health');
+    statusBarCoins = new StatusBar('coins');
+    statusBarBottles = new StatusBar('bottles');
 
     constructor(canvas, keyboard) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
-        this.draw()
         this.keyboard = keyboard;
+        this.statusBarHealth.setPercentage(this.character.health);
+        this.draw();
         this.setWorld();
+        this.checkCollisions();
     }
 
     setWorld() {
         this.character.world = this;
+    }
+
+    checkCollisions() {
+        setInterval(() => {
+            this.activeLevel.enemies.forEach(enemy => {
+                if (this.character.isColliding(enemy)) {
+                    this.character.hit(20);
+                    this.statusBarHealth.setPercentage(this.character.health);
+                    console.log("Enemy is colliding with character", enemy);
+                }
+            })
+        }, 200)
     }
 
     draw() {
@@ -30,6 +47,10 @@ class World {
 
         this.ctx.translate(-this.camera_x, 0)
 
+        this.addToMap(this.statusBarHealth);
+        this.addToMap(this.statusBarCoins);
+        this.addToMap(this.statusBarBottles);
+
         requestAnimationFrame(this.draw.bind(this));
     }
 
@@ -41,16 +62,37 @@ class World {
 
     addToMap(obj) {
         if (obj.otherDirection) {
-            this.ctx.save();
-            this.ctx.translate(obj.width, 0);
-            this.ctx.scale(-1, 1);
-            obj.x = obj.x * -1;
+            this.flipImage(obj)
         }
-        this.ctx.drawImage(obj.img, obj.x, obj.y, obj.width, obj.height)
+
+        obj.draw(this.ctx);
+        if (obj instanceof Character || obj instanceof Chicken) {
+            obj.drawFrame(this.ctx);
+        }
+
         if (obj.otherDirection) {
-            obj.x = obj.x * -1;
-            this.ctx.restore();
+            this.flipImageBack(obj);
         }
     }
 
+    flipImage(obj) {
+        this.ctx.save();
+        this.ctx.translate(obj.width, 0);
+        this.ctx.scale(-1, 1);
+        obj.x = obj.x * -1;
+    }
+
+    flipImageBack(obj) {
+        obj.x = obj.x * -1;
+        this.ctx.restore();
+    }
+
+    showGameOverScreen() {
+        //this.stopAnimation()
+    }
+
+    stopAnimation() {
+        //this.keyboard = null;
+        //this.freeze();
+    }
 }

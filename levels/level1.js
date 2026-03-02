@@ -2,9 +2,10 @@ let enemies = [
     new Chicken(),
     new Chicken(),
     new Chicken(),
+    new Endboss()
 ];
 let clouds = [
-    new Cloud()
+    new Cloud(),
 ];
 let backgroundObjects = [
     new BackgroundObject("img/5_background/layers/air.png", 0),
