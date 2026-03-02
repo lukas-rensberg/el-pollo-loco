@@ -5,7 +5,12 @@ let enemies = [
     new Endboss()
 ];
 let clouds = [
-    new Cloud(),
+    new Cloud("img/5_background/layers/4_clouds/1.png", 0),
+    new Cloud("img/5_background/layers/4_clouds/2.png", 650),
+    new Cloud("img/5_background/layers/4_clouds/1.png", 1300),
+    new Cloud("img/5_background/layers/4_clouds/2.png", 1950),
+    new Cloud("img/5_background/layers/4_clouds/1.png", 2600),
+    new Cloud("img/5_background/layers/4_clouds/2.png", 3250),
 ];
 let backgroundObjects = [
     new BackgroundObject("img/5_background/layers/air.png", 0),
