@@ -1,6 +1,11 @@
-class World {
+import Character from "./character.class.js";
+import Chicken from "./chicken.class.js";
+import SmallChicken from "./small-chicken.class.js";
+import StatusBar from "./statusbar.class.js";
+
+export default class World {
     character = new Character();
-    activeLevel = level1;
+    activeLevel;
     canvas;
     ctx;
     keyboard;
@@ -8,34 +13,130 @@ class World {
     statusBarHealth = new StatusBar('health');
     statusBarCoins = new StatusBar('coins');
     statusBarBottles = new StatusBar('bottles');
+    coinPercentage = 0;
+    gameOverShown = false;
+    animationFrameId = null;
+    stopped = false;
 
-    constructor(canvas, keyboard) {
+    /**
+     * Creates the world instance and wires canvas, input state and active level.
+     * @param {HTMLCanvasElement} canvas - Canvas element used for rendering.
+     * @param {Keyboard} keyboard - Shared keyboard input state.
+     * @param {Level} level - Active level with enemies, background objects, clouds and coins.
+     */
+    constructor(canvas, keyboard, level) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
         this.keyboard = keyboard;
+        this.activeLevel = level;
         this.statusBarHealth.setPercentage(this.character.health);
         this.draw();
         this.setWorld();
         this.checkCollisions();
     }
 
+    /**
+     * Sets the world reference in character and all enemies to this world instance.
+     */
     setWorld() {
         this.character.world = this;
     }
 
+    /**
+     * Checks if the Character is colliding with any of the enemies or coins in the active level and reacts accordingly.
+     */
     checkCollisions() {
         setInterval(() => {
-            this.activeLevel.enemies.forEach(enemy => {
-                if (this.character.isColliding(enemy)) {
-                    this.character.hit(20);
-                    this.statusBarHealth.setPercentage(this.character.health);
-                    console.log("Enemy is colliding with character", enemy);
+            this.isCharColliding(this.activeLevel.enemies, (enemy) => {
+                if (enemy.isDead() 
+                    || this.isCharacterInAir() 
+                    || this.character.isHurt() 
+                    || !this.isEnemyHittingCharacter(enemy)
+                ) return;
+
+                if (this.isStompingEnemy(enemy)) {
+                    enemy.kill();
+                    this.character.jump();
+                    this.removeEnemy(enemy);
+                    return;
                 }
-            })
-        }, 200)
+
+                this.character.hit(20);
+                this.statusBarHealth.setPercentage(this.character.health);
+            });
+
+            this.isCharColliding(this.activeLevel.coins, (coin, index) => {
+                this.updateCoins(index, 20);
+            });
+        }, 1000 / 60)
+    }
+
+    /**
+     * Updates the coin percentage and removes the collected coin from the level.
+     * @param index - The index of the collected coin in the active level's coins array
+     * @param amount - The amount of percentage to add to the coin status bar
+     */
+    updateCoins(index, amount) {
+        this.activeLevel.coins.splice(index, 1);
+        this.coinPercentage = Math.min(this.coinPercentage + amount, 100);
+        this.statusBarCoins.setPercentage(this.coinPercentage);
+    }
+
+    /**
+     * Helper function to determine if the character is currently in the air, either by jumping or falling.
+     * @returns {boolean}
+     */
+    isCharacterInAir() {
+        return this.character.isAboveGround() || this.character.speedY > 0;
+    }
+
+    /**
+     * Helper function to determine if the enemy is currently colliding with the character, based on their horizontal positions.
+     * @param enemy
+     * @returns {boolean}
+     */
+    isEnemyHittingCharacter(enemy) {
+        let characterLeft = this.character.x + 35;
+        let characterRight = this.character.x + this.character.width - 35;
+        let enemyLeft = enemy.x + 10;
+        let enemyRight = enemy.x + enemy.width - 10;
+
+        return characterRight > enemyLeft && characterLeft < enemyRight;
+    }
+
+    /**
+     * Helper function to determine if the character is stomping the enemy, based on their vertical positions and the character's vertical speed.
+     * @param enemy - The enemy to check for stomping collision
+     * @returns {boolean}
+     */
+    isStompingEnemy(enemy) {
+        let characterBottom = this.character.y + this.character.height;
+        let enemyTopHitZone = enemy.y + Math.max(enemy.height * 0.8, 55);
+
+        return this.character.speedY < 0 &&
+            this.isEnemyHittingCharacter(enemy) &&
+            characterBottom >= enemy.y &&
+            characterBottom <= enemyTopHitZone;
+    }
+
+    removeEnemy(enemy) {
+        setTimeout(() => {
+            let idx = this.activeLevel.enemies.indexOf(enemy);
+            if (idx > -1) this.activeLevel.enemies.splice(idx, 1);
+        }, 2000);
+    }
+
+    isCharColliding(array, callback) {
+        for (let i = array.length - 1; i >= 0; i--) {
+            if (this.character.isColliding(array[i])) {
+                callback(array[i], i);
+            }
+        }
     }
 
     draw() {
+        if (this.stopped) return;
+
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.ctx.translate(this.camera_x, 0)
@@ -43,6 +144,7 @@ class World {
         this.addObjectsToMap(this.activeLevel.backgroundObjects)
         this.addObjectsToMap(this.activeLevel.enemies);
         this.addObjectsToMap(this.activeLevel.clouds);
+        this.addObjectsToMap(this.activeLevel.coins);
         this.addToMap(this.character)
 
         this.ctx.translate(-this.camera_x, 0)
@@ -51,7 +153,7 @@ class World {
         this.addToMap(this.statusBarCoins);
         this.addToMap(this.statusBarBottles);
 
-        requestAnimationFrame(this.draw.bind(this));
+        this.animationFrameId = requestAnimationFrame(this.draw.bind(this));
     }
 
     addObjectsToMap(array) {
@@ -66,7 +168,7 @@ class World {
         }
 
         obj.draw(this.ctx);
-        if (obj instanceof Character || obj instanceof Chicken) {
+        if (obj instanceof Character || obj instanceof Chicken || obj instanceof SmallChicken) {
             obj.drawFrame(this.ctx);
         }
 
@@ -88,11 +190,14 @@ class World {
     }
 
     showGameOverScreen() {
-        //this.stopAnimation()
-    }
-
-    stopAnimation() {
-        //this.keyboard = null;
-        //this.freeze();
+        if (this.gameOverShown) return;
+        this.gameOverShown = true;
+        this.stopped = true;
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+        for (let i = 1; i < 9999; i++) window.clearInterval(i);
+        document.getElementById('gameOverScreen').classList.remove('d-none');
     }
 }

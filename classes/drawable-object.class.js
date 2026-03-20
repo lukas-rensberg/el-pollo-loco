@@ -1,4 +1,4 @@
-class DrawableObject {
+export default class DrawableObject {
     x = 120;
     y = 250;
     height = 150;

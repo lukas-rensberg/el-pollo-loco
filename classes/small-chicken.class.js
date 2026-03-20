@@ -1,4 +1,6 @@
-class SmallChicken extends MovableObject {
+import Chicken from "./chicken.class.js";
+
+export default class SmallChicken extends Chicken {
     y = 375
     height = 50
     width = 50
@@ -8,23 +10,25 @@ class SmallChicken extends MovableObject {
         "img/3_enemies_chicken/chicken_small/1_walk/3_w.png",
     ]
 
+    IMAGES_DEAD = [
+        "img/3_enemies_chicken/chicken_small/2_dead/dead.png"
+    ]
+
     constructor() {
         super().loadImage("img/3_enemies_chicken/chicken_small/1_walk/1_w.png");
-        this.loadImages(this.IMAGES_WALKING);
-
-        this.x = 200 + Math.random() * 500;
-        this.speed = this.speed + Math.random() * 0.25;
-
-        this.animate()
+        this.initialize()
     }
 
     animate() {
         setInterval(() => {
-            this.playAnimation(this.IMAGES_WALKING)
-        }, 200)
-
+            if (this.isDead()) {
+                this.playAnimation(this.IMAGES_DEAD);
+            } else {
+                this.playAnimation(this.IMAGES_WALKING);
+            }
+        }, 200);
         setInterval(() => {
-            this.moveLeft()
+            if (!this.isDead()) this.moveLeft();
         }, 1000 / 60);
     }
 }

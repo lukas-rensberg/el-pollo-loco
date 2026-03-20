@@ -1,4 +1,6 @@
-class MovableObject extends DrawableObject {
+import DrawableObject from "./drawable-object.class.js";
+
+export default class MovableObject extends DrawableObject {
     speed = 0.15;
     otherDirection = false;
     speedY = 0;
@@ -16,17 +18,15 @@ class MovableObject extends DrawableObject {
                 this.y -= this.speedY;
                 this.speedY -= this.acceleration;
             }
-        }, 1000 / 25)
+        }, 1000 / 25);
     }
 
     drawFrame(ctx) {
-        if (this instanceof Character || this instanceof Chicken || this instanceof SmallChicken) {
-            ctx.beginPath();
-            ctx.lineWidth = "3";
-            ctx.strokeStyle = "blue";
-            ctx.rect(this.x, this.y, this.width, this.height);
-            ctx.stroke();
-        }
+        ctx.beginPath();
+        ctx.lineWidth = "3";
+        ctx.strokeStyle = "blue";
+        ctx.rect(this.x, this.y, this.width, this.height);
+        ctx.stroke();
     }
 
     isAboveGround() {
@@ -44,8 +44,8 @@ class MovableObject extends DrawableObject {
     isColliding(obj) {
         return this.x + this.width > obj.x &&
             this.y + this.height > obj.y &&
-            this.x < obj.x &&
-            this.y < obj.y;
+            this.x < obj.x + obj.width &&
+            this.y < obj.y + obj.height;
     }
 
     jump() {

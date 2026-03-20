@@ -1,4 +1,6 @@
-class Endboss extends MovableObject {
+import MovableObject from "./movable-object.class.js";
+
+export default class Endboss extends MovableObject {
     IMAGES_WALKING = [
         "img/4_enemie_boss_chicken/1_walk/G1.png",
         "img/4_enemie_boss_chicken/1_walk/G2.png",

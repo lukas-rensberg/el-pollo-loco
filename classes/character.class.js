@@ -1,9 +1,12 @@
-class Character extends MovableObject {
+import MovableObject from "./movable-object.class.js";
+
+export default class Character extends MovableObject {
     x = 60
     y = 130
     width = 170;
     height = 300;
     speed = 10;
+    health = 300; // For development purposes only
     IMAGES_WALKING = [
         "img/2_character_pepe/2_walk/W-21.png",
         "img/2_character_pepe/2_walk/W-22.png",
@@ -37,10 +40,23 @@ class Character extends MovableObject {
         "img/2_character_pepe/5_dead/D-56.png",
         "img/2_character_pepe/5_dead/D-57.png"
     ]
+    IMAGES_IDLE = [
+        "img/2_character_pepe/1_idle/long_idle/I-11.png",
+        "img/2_character_pepe/1_idle/long_idle/I-12.png",
+        "img/2_character_pepe/1_idle/long_idle/I-13.png",
+        "img/2_character_pepe/1_idle/long_idle/I-14.png",
+        "img/2_character_pepe/1_idle/long_idle/I-15.png",
+        "img/2_character_pepe/1_idle/long_idle/I-16.png",
+        "img/2_character_pepe/1_idle/long_idle/I-17.png",
+        "img/2_character_pepe/1_idle/long_idle/I-18.png",
+        "img/2_character_pepe/1_idle/long_idle/I-19.png",
+        "img/2_character_pepe/1_idle/long_idle/I-20.png",
+    ]
     world;
 
     constructor() {
         super().loadImage("img/2_character_pepe/1_idle/idle/I-1.png");
+        this.loadImages(this.IMAGES_IDLE);
         this.loadImages(this.IMAGES_WALKING);
         this.loadImages(this.IMAGES_JUMPING);
         this.loadImages(this.IMAGES_HURT);
@@ -68,6 +84,7 @@ class Character extends MovableObject {
         setInterval(() => {
             if (this.isDead()) {
                 this.playAnimation(this.IMAGES_DEAD)
+                this.world.showGameOverScreen()
             } else if (this.world.keyboard.SPACE && !this.isAboveGround()) {
                 this.jump()
             } else if (this.world.keyboard.RIGHT_ARROW && this.x < this.world.activeLevel.level_end_x) {
@@ -78,6 +95,6 @@ class Character extends MovableObject {
                 this.moveLeft();
             }
             this.world.camera_x = -this.x + 60
-        }, 1000 / 60)
+        }, 1000 / 60);
     }
 }

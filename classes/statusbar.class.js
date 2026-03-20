@@ -1,4 +1,6 @@
-class StatusBar extends DrawableObject {
+import DrawableObject from "./drawable-object.class.js";
+
+export default class StatusBar extends DrawableObject {
     IMAGES_COINS = [
         "img/7_statusbars/1_statusbar/1_statusbar_coin/orange/0.png",
         "img/7_statusbars/1_statusbar/1_statusbar_coin/orange/20.png",
