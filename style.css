@@ -1,10 +1,10 @@
 @font-face {
-    font-family: 'ArcadeClassic';
+    font-family: 'Rye';
     src: url('fonts/rye.ttf') format('truetype');
 }
 
 body {
-    font-family: 'rye', sans-serif;
+    font-family: 'Rye', sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
