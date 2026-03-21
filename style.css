@@ -1,4 +1,10 @@
+@font-face {
+    font-family: 'ArcadeClassic';
+    src: url('fonts/rye.ttf') format('truetype');
+}
+
 body {
+    font-family: 'rye', sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
@@ -6,6 +12,20 @@ body {
     align-items: center;
     height: 100vh;
     flex-direction: column;
+}
+
+h1 {
+    font-size: 4rem;
+}
+
+#backgroundImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
 }
 
 #gameContainer {
