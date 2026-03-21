@@ -30,7 +30,7 @@ export default class MovableObject extends DrawableObject {
     }
 
     isAboveGround() {
-        return this.y < 130;
+        return this.y < 129;
     }
 
     moveRight() {

@@ -1,4 +1,5 @@
 import MovableObject from "./movable-object.class.js";
+import SalsaBottle from "./salsa-bottle.class.js";
 
 export default class Character extends MovableObject {
     x = 60
@@ -6,7 +7,11 @@ export default class Character extends MovableObject {
     width = 170;
     height = 300;
     speed = 10;
-    health = 300; // For development purposes only
+    health = 300;
+    bottleCount = 0;
+    throwableBottles = [];
+    lastThrowTime = 0;
+    THROW_COOLDOWN = 100;
     IMAGES_WALKING = [
         "img/2_character_pepe/2_walk/W-21.png",
         "img/2_character_pepe/2_walk/W-22.png",
@@ -93,8 +98,24 @@ export default class Character extends MovableObject {
             } else if (this.world.keyboard.LEFT_ARROW && this.x > 60) {
                 this.otherDirection = true;
                 this.moveLeft();
+            } else if (this.world.keyboard.KEY_D && this.bottleCount > 0) {
+                this.throw();
             }
             this.world.camera_x = -this.x + 60
         }, 1000 / 60);
+    }
+
+    throw() {
+        let now = new Date().getTime();
+        if (now - this.lastThrowTime < this.THROW_COOLDOWN) return;
+        this.lastThrowTime = now;
+
+        let throwX = this.otherDirection ? this.x - 30 : this.x + this.width + 30;
+        let throwY = this.y + 100;
+        
+        let bottle = new SalsaBottle(throwX, throwY, !this.otherDirection);
+        this.world.activeLevel.throwableBottles.push(bottle);
+        this.bottleCount--;
+        this.world.statusBarBottles.setPercentage(this.bottleCount * 20);
     }
 }

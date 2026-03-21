@@ -22,7 +22,7 @@ function restartGame() {
 function generateWorld() {
     canvas = document.getElementById("gameCanvas");
     let levelData = createLevel1Objects();
-    let activeLevel = new Level(levelData.enemies, levelData.clouds, levelData.backgroundObjects, levelData.coins, 719 * 4 + 40);
+    let activeLevel = new Level(levelData.enemies, levelData.clouds, levelData.backgroundObjects, levelData.coins, 719 * 4 + 40, levelData.bottles);
     world = new World(canvas, keyboard, activeLevel);
 }
 

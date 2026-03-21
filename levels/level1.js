@@ -4,6 +4,7 @@ import Chicken from "../classes/chicken.class.js";
 import SmallChicken from "../classes/small-chicken.class.js";
 import Endboss from "../classes/endboss.class.js";
 import Coins from "../classes/coins.class.js";
+import BottleGround from "../classes/bottle-ground.class.js";
 
 /**
  * Creates and returns all the game elements for Level 1, including
@@ -65,7 +66,14 @@ export default function createLevel1Objects() {
         new Coins(),
         new Coins(),
         new Coins(),
+    ];
+    let bottles = [
+        new BottleGround(400, 350),
+        new BottleGround(800, 350),
+        new BottleGround(1200, 350),
+        new BottleGround(1600, 350),
+        new BottleGround(2000, 350),
     ]
 
-    return { enemies, clouds, backgroundObjects, coins };
+    return { enemies, clouds, backgroundObjects, coins, bottles };
 }

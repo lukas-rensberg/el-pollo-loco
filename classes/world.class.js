@@ -30,6 +30,7 @@ export default class World {
         this.keyboard = keyboard;
         this.activeLevel = level;
         this.statusBarHealth.setPercentage(this.character.health);
+        this.statusBarBottles.setPercentage(0);
         this.draw();
         this.setWorld();
         this.checkCollisions();
@@ -49,8 +50,7 @@ export default class World {
         setInterval(() => {
             this.isCharColliding(this.activeLevel.enemies, (enemy) => {
                 if (enemy.isDead() 
-                    || this.isCharacterInAir() 
-                    || this.character.isHurt() 
+                    || this.character.isHurt()
                     || !this.isEnemyHittingCharacter(enemy)
                 ) return;
 
@@ -61,13 +61,32 @@ export default class World {
                     return;
                 }
 
-                this.character.hit(20);
-                this.statusBarHealth.setPercentage(this.character.health);
+                if (!this.isCharacterInAir()) {
+                    this.character.hit(20);
+                    this.statusBarHealth.setPercentage(this.character.health);
+                }
             });
 
             this.isCharColliding(this.activeLevel.coins, (coin, index) => {
                 this.updateCoins(index, 20);
             });
+
+            this.isCharColliding(this.activeLevel.bottles, (bottle, index) => {
+                this.updateBottles(index);
+            });
+
+            // for (let i = this.character.throwableBottles.length - 1; i >= 0; i--) {
+            //     let bottle = this.character.throwableBottles[i];
+            //     for (let j = this.activeLevel.enemies.length - 1; j >= 0; j--) {
+            //         let enemy = this.activeLevel.enemies[j];
+            //         if (bottle.isColliding(enemy)) {
+            //             enemy.kill();
+            //             this.character.throwableBottles.splice(i, 1);
+            //             this.removeEnemy(enemy);
+            //             break;
+            //         }
+            //     }
+            // }
         }, 1000 / 60)
     }
 
@@ -80,6 +99,16 @@ export default class World {
         this.activeLevel.coins.splice(index, 1);
         this.coinPercentage = Math.min(this.coinPercentage + amount, 100);
         this.statusBarCoins.setPercentage(this.coinPercentage);
+    }
+
+    /**
+     * Updates the bottle count and removes the collected bottle from the level.
+     * @param index - The index of the collected bottle in the active level's bottles array
+     */
+    updateBottles(index) {
+        this.activeLevel.bottles.splice(index, 1);
+        this.character.bottleCount++;
+        this.statusBarBottles.setPercentage(this.character.bottleCount * 20);
     }
 
     /**
@@ -119,6 +148,10 @@ export default class World {
             characterBottom <= enemyTopHitZone;
     }
 
+    /**
+     * Removes the enemy from the active level after a short delay to allow for death animation to play.
+     * @param enemy
+     */
     removeEnemy(enemy) {
         setTimeout(() => {
             let idx = this.activeLevel.enemies.indexOf(enemy);
@@ -126,6 +159,11 @@ export default class World {
         }, 2000);
     }
 
+    /**
+     * Helper function to check if the character is colliding with any object in the provided array and execute a callback function if a collision is detected.
+     * @param array
+     * @param callback
+     */
     isCharColliding(array, callback) {
         for (let i = array.length - 1; i >= 0; i--) {
             if (this.character.isColliding(array[i])) {
@@ -134,6 +172,13 @@ export default class World {
         }
     }
 
+    /**
+     * Main game loop that
+     * - clears the canvas,
+     * - translates the context based on the camera position,
+     * - draws all game objects and status bars,
+     * - and requests the next animation frame.
+     */
     draw() {
         if (this.stopped) return;
 
@@ -145,6 +190,7 @@ export default class World {
         this.addObjectsToMap(this.activeLevel.enemies);
         this.addObjectsToMap(this.activeLevel.clouds);
         this.addObjectsToMap(this.activeLevel.coins);
+        this.addObjectsToMap(this.activeLevel.bottles);
         this.addToMap(this.character)
 
         this.ctx.translate(-this.camera_x, 0)
@@ -156,12 +202,22 @@ export default class World {
         this.animationFrameId = requestAnimationFrame(this.draw.bind(this));
     }
 
+    /**
+     * Adds all objects from the provided array to the map.
+     * @param array - The array of objects to add to the map
+     */
     addObjectsToMap(array) {
         array.forEach(obj => {
             this.addToMap(obj)
         })
     }
 
+    /**
+     * Adds a single object to the map,
+     * flipping the image if necessary based on the object's otherDirection property,
+     * and drawing the object and its animation frame if applicable.
+     * @param obj - The Object to add to the map
+     */
     addToMap(obj) {
         if (obj.otherDirection) {
             this.flipImage(obj)
@@ -177,6 +233,12 @@ export default class World {
         }
     }
 
+    /**
+     * Helper function to flip the image horizontally by translating
+     * and scaling the context, and adjusting the object's x position
+     * accordingly.
+     * @param obj - The object whose image should be flipped
+     */
     flipImage(obj) {
         this.ctx.save();
         this.ctx.translate(obj.width, 0);
@@ -184,11 +246,18 @@ export default class World {
         obj.x = obj.x * -1;
     }
 
+    /**
+     * Helper function to restore the context to its original state after flipping the image,
+     * @param obj - The object whose image should be flipped back to its original orientation
+     */
     flipImageBack(obj) {
         obj.x = obj.x * -1;
         this.ctx.restore();
     }
 
+    /**
+     *
+     */
     showGameOverScreen() {
         if (this.gameOverShown) return;
         this.gameOverShown = true;
