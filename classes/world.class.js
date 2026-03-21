@@ -1,5 +1,6 @@
 import Character from "./character.class.js";
 import Chicken from "./chicken.class.js";
+import Endboss from "./endboss.class.js";
 import SmallChicken from "./small-chicken.class.js";
 import StatusBar from "./statusbar.class.js";
 
@@ -75,19 +76,49 @@ export default class World {
                 this.updateBottles(index);
             });
 
-            // for (let i = this.character.throwableBottles.length - 1; i >= 0; i--) {
-            //     let bottle = this.character.throwableBottles[i];
-            //     for (let j = this.activeLevel.enemies.length - 1; j >= 0; j--) {
-            //         let enemy = this.activeLevel.enemies[j];
-            //         if (bottle.isColliding(enemy)) {
-            //             enemy.kill();
-            //             this.character.throwableBottles.splice(i, 1);
-            //             this.removeEnemy(enemy);
-            //             break;
-            //         }
-            //     }
-            // }
+            this.checkThrowableBottleCollisions();
         }, 1000 / 60)
+    }
+
+    /**
+     * Breaks thrown bottles when they hit the ground or the endboss and removes them after splash animation.
+     */
+    checkThrowableBottleCollisions() {
+        for (let i = this.activeLevel.throwableBottles.length - 1; i >= 0; i--) {
+            let bottle = this.activeLevel.throwableBottles[i];
+
+            if (bottle.markedForRemoval) {
+                this.activeLevel.throwableBottles.splice(i, 1);
+                continue;
+            }
+
+            if (bottle.isBroken) continue;
+
+            if (this.isBottleHittingGround(bottle) || this.isBottleHittingEndboss(bottle)) {
+                bottle.break();
+            }
+        }
+    }
+
+    /**
+     * Helper Func:
+     * Checks if the thrown bottle is colliding with the ground
+     * @param bottle
+     * @returns {boolean}
+     */
+    isBottleHittingGround(bottle) {
+        return bottle.speedY <= 0 && bottle.y >= bottle.GROUND_Y;
+    }
+
+    /**
+     * Helper Func:
+     * Checks if the thrown bottle is colliding with the endboss
+     * @param bottle
+     * @returns {boolean}
+     */
+    isBottleHittingEndboss(bottle) {
+        return this.activeLevel.enemies.some(enemy =>
+            enemy instanceof Endboss && bottle.isColliding(enemy));
     }
 
     /**
@@ -191,6 +222,7 @@ export default class World {
         this.addObjectsToMap(this.activeLevel.clouds);
         this.addObjectsToMap(this.activeLevel.coins);
         this.addObjectsToMap(this.activeLevel.bottles);
+        this.addObjectsToMap(this.activeLevel.throwableBottles);
         this.addToMap(this.character)
 
         this.ctx.translate(-this.camera_x, 0)
@@ -256,7 +288,10 @@ export default class World {
     }
 
     /**
-     *
+     * Displays the game over screen by
+     * - stopping the game loop,
+     * - clearing all intervals,
+     * - and showing the game over screen element
      */
     showGameOverScreen() {
         if (this.gameOverShown) return;

@@ -9,7 +9,6 @@ export default class Character extends MovableObject {
     speed = 10;
     health = 300;
     bottleCount = 0;
-    throwableBottles = [];
     lastThrowTime = 0;
     THROW_COOLDOWN = 100;
     IMAGES_WALKING = [
@@ -98,7 +97,7 @@ export default class Character extends MovableObject {
             } else if (this.world.keyboard.LEFT_ARROW && this.x > 60) {
                 this.otherDirection = true;
                 this.moveLeft();
-            } else if (this.world.keyboard.KEY_D && this.bottleCount > 0) {
+            } else if (this.world.keyboard.KEY_D && this.bottleCount > 0 && !this.otherDirection) {
                 this.throw();
             }
             this.world.camera_x = -this.x + 60
@@ -110,10 +109,11 @@ export default class Character extends MovableObject {
         if (now - this.lastThrowTime < this.THROW_COOLDOWN) return;
         this.lastThrowTime = now;
 
-        let throwX = this.otherDirection ? this.x - 30 : this.x + this.width + 30;
+        let throwToRight = !this.otherDirection;
+        let throwX = throwToRight ? this.x + this.width + 30 : this.x - 60;
         let throwY = this.y + 100;
         
-        let bottle = new SalsaBottle(throwX, throwY, !this.otherDirection);
+        let bottle = new SalsaBottle(throwX, throwY, throwToRight);
         this.world.activeLevel.throwableBottles.push(bottle);
         this.bottleCount--;
         this.world.statusBarBottles.setPercentage(this.bottleCount * 20);

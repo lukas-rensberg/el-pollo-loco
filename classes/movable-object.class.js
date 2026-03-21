@@ -7,13 +7,15 @@ export default class MovableObject extends DrawableObject {
     acceleration = 2.5;
     health = 100;
     lastHit = 0;
+    gravityInterval = null;
 
     constructor() {
         super();
     }
 
     applyGravity() {
-        setInterval(() => {
+        if (this.gravityInterval) clearInterval(this.gravityInterval);
+        this.gravityInterval = setInterval(() => {
             if (this.isAboveGround() || this.speedY > 0) {
                 this.y -= this.speedY;
                 this.speedY -= this.acceleration;
