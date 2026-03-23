@@ -11,15 +11,13 @@
 <body>
     <h1>El pollo loco</h1>
 
+    <div id="rotate-warning" aria-live="polite">Bitte Gerät drehen</div>
+
     <img src="img/5_background/screen-bg.png" id="backgroundImage" alt="fullscreen background image showing a desert">
     <div id="gameContainer">
         <canvas width="720" height="480" id="gameCanvas">
             Your Browser does not support the HTML5 canvas tag.
         </canvas>
-
-        <div id="mobilePortraitOverlay" class="d-none" aria-live="polite">
-            <p>Bitte drehe dein Gerät ins Querformat, um zu spielen.</p>
-        </div>
 
         <div id="uiButtons">
             <button class="uiIconButton" onclick="openDialog('controlsDialog')" aria-label="Tasteninfo" title="Tasteninfo">
@@ -46,11 +44,11 @@
             <img id="muteIcon" src="img/10_game_icons/volume-on.svg" alt="Ton an">
         </button>
 
-        <div id="touchControls" class="d-none" aria-label="Mobile Steuerung">
-            <button class="touchButton" id="touchLeft" aria-label="Nach links">&#9664;</button>
-            <button class="touchButton" id="touchRight" aria-label="Nach rechts">&#9654;</button>
-            <button class="touchButton" id="touchJump" aria-label="Springen">Jump</button>
-            <button class="touchButton" id="touchThrow" aria-label="Werfen">Throw</button>
+        <div id="mobile-controls" class="d-none" aria-label="Mobile Steuerung">
+            <button class="touchButton" id="btn-left" aria-label="Nach links">&#9664;</button>
+            <button class="touchButton" id="btn-right" aria-label="Nach rechts">&#9654;</button>
+            <button class="touchButton" id="btn-jump" aria-label="Springen">Jump</button>
+            <button class="touchButton" id="btn-throw" aria-label="Werfen">Throw</button>
         </div>
 
         <dialog id="controlsDialog" class="gameDialog">

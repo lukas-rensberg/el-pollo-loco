@@ -71,6 +71,10 @@ function isMobileViewport() {
         window.matchMedia('(pointer: coarse)').matches;
 }
 
+function isTouchDevice() {
+    return 'ontouchstart' in window;
+}
+
 function isPortraitOrientation() {
     return window.matchMedia('(orientation: portrait)').matches;
 }
@@ -102,21 +106,22 @@ function updateViewportHeightUnit() {
     document.documentElement.style.setProperty('--safe-vh', `${vh}px`);
 }
 
+function checkOrientation() {
+    const rotateWarning = document.getElementById('rotate-warning');
+    if (!rotateWarning) return;
+
+    const showWarning = isMobileViewport() && window.innerHeight > window.innerWidth;
+    rotateWarning.style.display = showWarning ? 'flex' : 'none';
+}
+
 function updateMobileLayoutState() {
-    const isMobile = isMobileViewport();
+    const isMobile = isTouchDevice();
     const isPortrait = isPortraitOrientation();
-    const showPortraitOverlay = isMobile && isPortrait;
     const showTouchControls = isMobile && !isPortrait;
 
-    document.body.classList.toggle('mobile-portrait', showPortraitOverlay);
     document.body.classList.toggle('mobile-controls-visible', showTouchControls);
 
-    const portraitOverlay = document.getElementById('mobilePortraitOverlay');
-    if (portraitOverlay) {
-        portraitOverlay.classList.toggle('d-none', !showPortraitOverlay);
-    }
-
-    const touchControls = document.getElementById('touchControls');
+    const touchControls = document.getElementById('mobile-controls');
     if (touchControls) {
         touchControls.classList.toggle('d-none', !showTouchControls);
     }
@@ -129,6 +134,7 @@ function canStartGameInCurrentOrientation() {
 
 function refreshResponsiveLayout() {
     updateViewportHeightUnit();
+    checkOrientation();
     updateMobileLayoutState();
     shouldRequestFullscreen = isLandscapePlayfieldTooSmall();
 }
@@ -168,19 +174,19 @@ function bindTouchControl(buttonId, onPress, onRelease) {
 function initTouchControls() {
     if (touchControlsInitialized) return;
 
-    bindTouchControl('touchLeft',
+    bindTouchControl('btn-left',
         () => keyboard.LEFT_ARROW = true,
         () => keyboard.LEFT_ARROW = false);
 
-    bindTouchControl('touchRight',
+    bindTouchControl('btn-right',
         () => keyboard.RIGHT_ARROW = true,
         () => keyboard.RIGHT_ARROW = false);
 
-    bindTouchControl('touchJump',
+    bindTouchControl('btn-jump',
         () => keyboard.SPACE = true,
         () => keyboard.SPACE = false);
 
-    bindTouchControl('touchThrow',
+    bindTouchControl('btn-throw',
         () => keyboard.KEY_D = true,
         () => keyboard.KEY_D = false);
 
@@ -305,8 +311,13 @@ window.openDialog = openDialog;
 window.closeDialog = closeDialog;
 
 initTouchControls();
+checkOrientation();
 refreshResponsiveLayout();
 window.addEventListener('resize', refreshResponsiveLayout);
-window.addEventListener('orientationchange', () => setTimeout(refreshResponsiveLayout, 50));
+window.addEventListener('resize', checkOrientation);
+window.addEventListener('orientationchange', () => setTimeout(() => {
+    refreshResponsiveLayout();
+    checkOrientation();
+}, 50));
 
 applyMuteState();

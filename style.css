@@ -207,6 +207,20 @@ canvas {
     background: rgba(0, 0, 0, 0.65);
 }
 
+#rotate-warning {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.95);
+    color: #ffffff;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    font-size: clamp(22px, 6vw, 36px);
+}
+
 #mobilePortraitOverlay {
     position: absolute;
     inset: 0;
@@ -221,19 +235,21 @@ canvas {
     font-size: 28px;
 }
 
-#touchControls {
-    position: absolute;
+#mobile-controls {
+    position: fixed;
     left: 50%;
     bottom: 12px;
     transform: translateX(-50%);
-    z-index: 20;
+    z-index: 40;
     display: none;
     gap: 12px;
+    width: min(96vw, 720px);
+    justify-content: center;
 }
 
 .touchButton {
-    min-width: 64px;
-    height: 48px;
+    min-width: 72px;
+    height: 56px;
     border: 2px solid #d35400;
     border-radius: 12px;
     background: rgba(230, 126, 34, 0.95);
@@ -288,16 +304,17 @@ canvas {
     display: none !important;
 }
 
-body.mobile-controls-visible #touchControls {
-    display: flex;
-}
 
 body.mobile-portrait #mobilePortraitOverlay {
     display: flex;
 }
 
-body.mobile-portrait #touchControls {
+body.mobile-portrait #mobile-controls {
     display: none;
+}
+
+body.mobile-controls-visible #mobile-controls {
+    display: flex;
 }
 
 @media (max-width: 1024px), (pointer: coarse) {
