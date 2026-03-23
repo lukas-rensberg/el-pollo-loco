@@ -17,15 +17,55 @@
             Your Browser does not support the HTML5 canvas tag.
         </canvas>
 
+        <div id="uiButtons">
+            <button class="uiIconButton" onclick="openDialog('controlsDialog')" aria-label="Tasteninfo" title="Tasteninfo">
+                <img src="img/10_game_icons/keys.svg" alt="Tasteninfo">
+            </button>
+            <button class="uiIconButton" onclick="openDialog('imprintDialog')" aria-label="Impressum" title="Impressum">
+                <img src="img/10_game_icons/info.svg" alt="Impressum">
+            </button>
+        </div>
+
         <div id="startScreen">
             <img src="img/9_intro_outro_screens/start/startscreen_1.png" alt="Start Screen showing a preview of the game with background, enemies and player">
-            <button id="startButton" onclick="startGame()">Start Game</button>
+            <button id="startButton" onclick="startGame()" aria-label="Spiel starten" title="Start Game">
+                <img src="img/10_game_icons/play.svg" alt="Starten">
+            </button>
         </div>
 
         <div id="gameOverScreen" class="d-none">
             <img src="img/9_intro_outro_screens/game_over/you lost.png" alt="Game Over">
             <button id="restartButton" onclick="restartGame()">Restart</button>
         </div>
+
+        <button id="muteButton" onclick="toggleMute(event)" aria-label="Ton umschalten" title="Ton an/aus">
+            <img id="muteIcon" src="img/10_game_icons/volume-on.svg" alt="Ton an">
+        </button>
+
+        <dialog id="controlsDialog" class="gameDialog">
+            <h2>Tasteninfo</h2>
+            <p>Links/Rechts: Pfeiltasten</p>
+            <p>Springen: Leertaste</p>
+            <p>Werfen: D</p>
+            <button class="dialogCloseButton" onclick="closeDialog('controlsDialog')">Schliessen</button>
+        </dialog>
+
+        <dialog id="imprintDialog" class="gameDialog">
+            <h2>Impressum</h2>
+            <p>Angaben gemäß § 5 DDG</p>
+            <p>Lukas Rensberg<br>
+                <br>
+                Bahnhofstraße 10<br>
+                37124 Rosdorf <br>
+            </p>
+
+            <p><strong>Kontakt:</strong> <br>
+                Telefon: 015563-543485<br>
+                E-Mail: <a href="mailto:info@lukas-rensberg.de">info@lukas-rensberg.de</a></p>
+
+            <p>Erstellt mit <a href="https://impressum-generator.de" rel="dofollow">Impressum-Generator.de</a>, dem Tool für Impressum und <a href="https://impressum-generator.de/datenschutz-generator" rel="dofollow">Datenschutz-Erklärung</a>. Nach einer Vorlage der <a href="https://www.kanzlei-hasselbach.de/" rel="dofollow">Kanzlei Hasselbach</a>.</p>
+            <button class="dialogCloseButton" onclick="closeDialog('imprintDialog')">Schliessen</button>
+        </dialog>
     </div>
 
     <script type="module" src="js/game.js"></script>

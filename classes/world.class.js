@@ -44,6 +44,9 @@ export default class World {
      */
     setWorld() {
         this.character.world = this;
+        this.activeLevel.enemies.forEach(enemy => {
+            enemy.world = this;
+        });
     }
 
     /**

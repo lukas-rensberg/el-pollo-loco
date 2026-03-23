@@ -20,7 +20,8 @@ export default class Endboss extends MovableObject {
     height = 325
     width = 275
     y = 130
-    speed = 0.3
+    speed = 1
+    hasBeenTriggered = false
 
     constructor(x) {
         super().loadImage(this.IMAGES_WALKING[0]);
@@ -36,7 +37,11 @@ export default class Endboss extends MovableObject {
         }, 200)
 
         setInterval(() => {
-            if (!this.world.character.isNearBoss()) return;
+            if (!this.world) return;
+            if (this.world.character.isNearBoss()) {
+                this.hasBeenTriggered = true;
+            }
+            if (!this.hasBeenTriggered) return;
             this.moveLeft();
         }, 1000 / 60)
     }
