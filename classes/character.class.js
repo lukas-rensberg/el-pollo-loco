@@ -11,7 +11,7 @@ export default class Character extends MovableObject {
     bottleCount = 0;
     lastThrowTime = 0;
     THROW_COOLDOWN = 100;
-    throwKeyLatched = false;
+    throwKeyPressed = false;
     IMAGES_WALKING = [
         "img/2_character_pepe/2_walk/W-21.png",
         "img/2_character_pepe/2_walk/W-22.png",
@@ -102,10 +102,10 @@ export default class Character extends MovableObject {
 
             let isThrowPressed = this.world.keyboard.KEY_D;
             if (!isThrowPressed) {
-                this.throwKeyLatched = false;
-            } else if (!this.throwKeyLatched && this.bottleCount > 0 && !this.otherDirection) {
+                this.throwKeyPressed = false;
+            } else if (!this.throwKeyPressed && this.bottleCount > 0 && !this.otherDirection) {
                 this.throw();
-                this.throwKeyLatched = true;
+                this.throwKeyPressed = true;
             } else if (this.otherDirection) {
                 this.bottleCount -= 1;
             }
@@ -127,5 +127,9 @@ export default class Character extends MovableObject {
         this.world.activeLevel.throwableBottles.push(bottle);
         this.bottleCount--;
         this.world.statusBarBottles.setPercentage(this.bottleCount * 20);
+    }
+
+    isNearBoss() {
+        return this.x > 5073;
     }
 }

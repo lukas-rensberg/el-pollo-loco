@@ -11,7 +11,8 @@ const BACKGROUND_TILE_COUNT = 8;
 const LEVEL_END_X = TILE_WIDTH * (BACKGROUND_TILE_COUNT - 1) + 40;
 const BOSS_SECTION_START_X = LEVEL_END_X - 900;
 const SAFE_ENEMY_MAX_X = BOSS_SECTION_START_X - 120;
-const BOSS_SPAWN_X = LEVEL_END_X + 500;
+const BOSS_SPAWN_X = LEVEL_END_X + 400;
+const BOTTLE_GROUND_Y = 350;
 
 function createEnemyAt(EnemyType, x) {
     const enemy = new EnemyType();
@@ -75,28 +76,28 @@ export default function createLevel1Objects() {
     }
 
     let coins = [
-        createCoinAt(260, 310),
-        createCoinAt(620, 280),
-        createCoinAt(980, 320),
-        createCoinAt(1380, 280),
-        createCoinAt(1780, 320),
-        createCoinAt(2180, 280),
-        createCoinAt(2580, 320),
-        createCoinAt(2980, 280),
-        createCoinAt(3380, 320),
-        createCoinAt(3780, 280),
+        createCoinAt(260, 280),
+        createCoinAt(620, 230),
+        createCoinAt(980, 260),
+        createCoinAt(1380, 200),
+        createCoinAt(1780, 250),
+        createCoinAt(2180, 190),
+        createCoinAt(2580, 240),
+        createCoinAt(2980, 180),
+        createCoinAt(3380, 230),
+        createCoinAt(3780, 200),
     ];
 
     let bottles = [
-        new BottleGround(400, 350),
-        new BottleGround(800, 350),
-        new BottleGround(1200, 350),
-        new BottleGround(1600, 350),
-        new BottleGround(2000, 350),
-        new BottleGround(2400, 350),
-        new BottleGround(2800, 350),
-        new BottleGround(3200, 350),
-        new BottleGround(3600, 350),
+        new BottleGround(400, BOTTLE_GROUND_Y),
+        new BottleGround(800, BOTTLE_GROUND_Y),
+        new BottleGround(1200, BOTTLE_GROUND_Y),
+        new BottleGround(1600, BOTTLE_GROUND_Y),
+        new BottleGround(2000, BOTTLE_GROUND_Y),
+        new BottleGround(2400, BOTTLE_GROUND_Y),
+        new BottleGround(2800, BOTTLE_GROUND_Y),
+        new BottleGround(3200, BOTTLE_GROUND_Y),
+        new BottleGround(3600, BOTTLE_GROUND_Y),
     ];
 
     return { enemies, clouds, backgroundObjects, coins, bottles, levelEndX: LEVEL_END_X };

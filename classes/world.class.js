@@ -53,9 +53,16 @@ export default class World {
         setInterval(() => {
             this.isCharColliding(this.activeLevel.enemies, (enemy) => {
                 if (enemy.isDead() 
-                    || this.character.isHurt()
                     || !this.isEnemyHittingCharacter(enemy)
                 ) return;
+
+                if (this.character.isHurt() && !(enemy instanceof Endboss)) return;
+
+                if (enemy instanceof Endboss) {
+                    this.character.hit(this.character.health);
+                    this.statusBarHealth.setPercentage(this.character.health);
+                    return;
+                }
 
                 if (this.isStompingEnemy(enemy)) {
                     enemy.kill();
