@@ -9,9 +9,14 @@ let keyboard = new Keyboard();
 const BG_MUSIC_VOLUME = 0.2;
 const ICON_MUTED = 'img/10_game_icons/mute.svg';
 const ICON_UNMUTED = 'img/10_game_icons/volume-on.svg';
+const MOBILE_BREAKPOINT = 720;
+const FULLSCREEN_MIN_WIDTH = 640;
+const FULLSCREEN_MIN_HEIGHT = 360;
 let backgroundMusic = new Audio('audio/bg-music.mp3');
 let isMuted = false;
 let hasGameStarted = false;
+let touchControlsInitialized = false;
+let shouldRequestFullscreen = false;
 
 backgroundMusic.loop = true;
 backgroundMusic.volume = BG_MUSIC_VOLUME;
@@ -61,6 +66,127 @@ function closeAllDialogs() {
     });
 }
 
+function isMobileViewport() {
+    return window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches ||
+        window.matchMedia('(pointer: coarse)').matches;
+}
+
+function isPortraitOrientation() {
+    return window.matchMedia('(orientation: portrait)').matches;
+}
+
+function isLandscapePlayfieldTooSmall() {
+    if (!isMobileViewport() || isPortraitOrientation()) return false;
+
+    const gameContainer = document.getElementById('gameContainer');
+    if (!gameContainer) return false;
+
+    const rect = gameContainer.getBoundingClientRect();
+    return rect.width < FULLSCREEN_MIN_WIDTH || rect.height < FULLSCREEN_MIN_HEIGHT;
+}
+
+function requestFullscreenBestEffort() {
+    const fullscreenTarget = document.documentElement;
+    if (!fullscreenTarget.requestFullscreen || document.fullscreenElement) return;
+    fullscreenTarget.requestFullscreen().catch(() => {});
+}
+
+function maybeRequestFullscreenFromGesture() {
+    if (!shouldRequestFullscreen) return;
+    requestFullscreenBestEffort();
+    shouldRequestFullscreen = false;
+}
+
+function updateViewportHeightUnit() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--safe-vh', `${vh}px`);
+}
+
+function updateMobileLayoutState() {
+    const isMobile = isMobileViewport();
+    const isPortrait = isPortraitOrientation();
+    const showPortraitOverlay = isMobile && isPortrait;
+    const showTouchControls = isMobile && !isPortrait;
+
+    document.body.classList.toggle('mobile-portrait', showPortraitOverlay);
+    document.body.classList.toggle('mobile-controls-visible', showTouchControls);
+
+    const portraitOverlay = document.getElementById('mobilePortraitOverlay');
+    if (portraitOverlay) {
+        portraitOverlay.classList.toggle('d-none', !showPortraitOverlay);
+    }
+
+    const touchControls = document.getElementById('touchControls');
+    if (touchControls) {
+        touchControls.classList.toggle('d-none', !showTouchControls);
+    }
+}
+
+function canStartGameInCurrentOrientation() {
+    updateMobileLayoutState();
+    return !(isMobileViewport() && isPortraitOrientation());
+}
+
+function refreshResponsiveLayout() {
+    updateViewportHeightUnit();
+    updateMobileLayoutState();
+    shouldRequestFullscreen = isLandscapePlayfieldTooSmall();
+}
+
+function bindTouchControl(buttonId, onPress, onRelease) {
+    const button = document.getElementById(buttonId);
+    if (!button) return;
+
+    button.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+    });
+
+    button.addEventListener('touchstart', (event) => {
+        event.preventDefault();
+        maybeRequestFullscreenFromGesture();
+        onPress();
+    }, { passive: false });
+
+    button.addEventListener('touchend', (event) => {
+        event.preventDefault();
+        onRelease();
+    }, { passive: false });
+
+    button.addEventListener('touchcancel', (event) => {
+        event.preventDefault();
+        onRelease();
+    }, { passive: false });
+
+    button.addEventListener('mousedown', () => {
+        maybeRequestFullscreenFromGesture();
+        onPress();
+    });
+    button.addEventListener('mouseup', onRelease);
+    button.addEventListener('mouseleave', onRelease);
+}
+
+function initTouchControls() {
+    if (touchControlsInitialized) return;
+
+    bindTouchControl('touchLeft',
+        () => keyboard.LEFT_ARROW = true,
+        () => keyboard.LEFT_ARROW = false);
+
+    bindTouchControl('touchRight',
+        () => keyboard.RIGHT_ARROW = true,
+        () => keyboard.RIGHT_ARROW = false);
+
+    bindTouchControl('touchJump',
+        () => keyboard.SPACE = true,
+        () => keyboard.SPACE = false);
+
+    bindTouchControl('touchThrow',
+        () => keyboard.KEY_D = true,
+        () => keyboard.KEY_D = false);
+
+    touchControlsInitialized = true;
+}
+
 /**
  * Starts background music from the beginning after a user interaction.
  */
@@ -76,6 +202,8 @@ function playBackgroundMusic() {
  * This function serves as the entry point to begin gameplay.
  */
 function startGame() {
+    if (!canStartGameInCurrentOrientation()) return;
+    maybeRequestFullscreenFromGesture();
     closeAllDialogs();
     document.getElementById('startScreen').classList.add('d-none');
     hasGameStarted = true;
@@ -92,6 +220,8 @@ function startGame() {
  * This allows the player to start a new game session with a fresh state.
  */
 function restartGame() {
+    if (!canStartGameInCurrentOrientation()) return;
+    maybeRequestFullscreenFromGesture();
     for (let i = 1; i < 9999; i++) window.clearInterval(i);
     closeAllDialogs();
     document.getElementById('gameOverScreen').classList.add('d-none');
@@ -173,5 +303,10 @@ window.restartGame = restartGame;
 window.toggleMute = toggleMute;
 window.openDialog = openDialog;
 window.closeDialog = closeDialog;
+
+initTouchControls();
+refreshResponsiveLayout();
+window.addEventListener('resize', refreshResponsiveLayout);
+window.addEventListener('orientationchange', () => setTimeout(refreshResponsiveLayout, 50));
 
 applyMuteState();

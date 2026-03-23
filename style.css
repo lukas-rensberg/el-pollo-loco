@@ -3,6 +3,12 @@
     src: url('fonts/rye.ttf') format('truetype');
 }
 
+:root {
+    --safe-vh: 1vh;
+    --canvas-max-w: 720px;
+    --canvas-max-h: 480px;
+}
+
 body {
     font-family: 'Rye', sans-serif;
     margin: 0;
@@ -10,12 +16,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: calc(var(--safe-vh) * 100);
     flex-direction: column;
+    overflow: hidden;
 }
 
 h1 {
     font-size: 4rem;
+    margin: 12px 0;
 }
 
 #backgroundImage {
@@ -30,8 +38,9 @@ h1 {
 
 #gameContainer {
     position: relative;
-    width: 720px;
-    height: 480px;
+    width: min(var(--canvas-max-w), calc(100vw - 24px), calc((var(--safe-vh) * 100 - 110px) * 1.5));
+    max-height: var(--canvas-max-h);
+    aspect-ratio: 3 / 2;
 }
 
 canvas {
@@ -198,6 +207,42 @@ canvas {
     background: rgba(0, 0, 0, 0.65);
 }
 
+#mobilePortraitOverlay {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+    font-size: 28px;
+}
+
+#touchControls {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: none;
+    gap: 12px;
+}
+
+.touchButton {
+    min-width: 64px;
+    height: 48px;
+    border: 2px solid #d35400;
+    border-radius: 12px;
+    background: rgba(230, 126, 34, 0.95);
+    color: white;
+    font-family: 'Rye', sans-serif;
+    font-size: 18px;
+    cursor: pointer;
+}
+
 #startScreen.d-none ~ #muteButton {
     display: flex;
 }
@@ -241,4 +286,31 @@ canvas {
 
 .d-none {
     display: none !important;
+}
+
+body.mobile-controls-visible #touchControls {
+    display: flex;
+}
+
+body.mobile-portrait #mobilePortraitOverlay {
+    display: flex;
+}
+
+body.mobile-portrait #touchControls {
+    display: none;
+}
+
+@media (max-width: 1024px), (pointer: coarse) {
+    h1 {
+        font-size: clamp(1.6rem, 5vw, 2.4rem);
+        margin: 8px 0;
+    }
+
+    #gameContainer {
+        width: min(var(--canvas-max-w), calc(100vw - 12px), calc((var(--safe-vh) * 100 - 90px) * 1.5));
+    }
+
+    body.mobile-controls-visible #gameContainer {
+        width: min(var(--canvas-max-w), calc(100vw - 12px), calc((var(--safe-vh) * 100 - 150px) * 1.5));
+    }
 }
