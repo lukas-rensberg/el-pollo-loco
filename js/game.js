@@ -42,7 +42,14 @@ function restartGame() {
 function generateWorld() {
     canvas = document.getElementById("gameCanvas");
     let levelData = createLevel1Objects();
-    let activeLevel = new Level(levelData.enemies, levelData.clouds, levelData.backgroundObjects, levelData.coins, 719 * 4 + 40, levelData.bottles);
+    let activeLevel = new Level(
+        levelData.enemies,
+        levelData.clouds,
+        levelData.backgroundObjects,
+        levelData.coins,
+        levelData.levelEndX,
+        levelData.bottles
+    );
     world = new World(canvas, keyboard, activeLevel);
 }
 
@@ -87,5 +94,10 @@ window.addEventListener("keyup", (event) => {
     }
 });
 
+/**
+ * Exposes the `startGame` and `restartGame` functions to the global scope so they can be called from the HTML buttons.
+ * @type {startGame}
+ * @type {restartGame}
+ */
 window.startGame = startGame;
 window.restartGame = restartGame;

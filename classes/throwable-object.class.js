@@ -23,6 +23,8 @@ export default class ThrowableObject extends MovableObject {
     rotationInterval = null;
     moveInterval = null;
     splashInterval = null;
+    speedY = 30;
+    speed = 10;
 
     constructor(startX, startY, throwToRight = false) {
         super();
@@ -52,8 +54,6 @@ export default class ThrowableObject extends MovableObject {
         this.y = startY;
         this.isBroken = false;
         this.markedForRemoval = false;
-        this.speedY = 30;
-        this.speed = throwToRight ? 10 : -10;
         this.otherDirection = !throwToRight;
 
         this.applyGravity();

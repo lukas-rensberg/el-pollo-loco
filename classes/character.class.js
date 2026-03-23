@@ -7,10 +7,11 @@ export default class Character extends MovableObject {
     width = 170;
     height = 300;
     speed = 10;
-    health = 300;
+    health = 100;
     bottleCount = 0;
     lastThrowTime = 0;
     THROW_COOLDOWN = 100;
+    throwKeyLatched = false;
     IMAGES_WALKING = [
         "img/2_character_pepe/2_walk/W-21.png",
         "img/2_character_pepe/2_walk/W-22.png",
@@ -97,9 +98,18 @@ export default class Character extends MovableObject {
             } else if (this.world.keyboard.LEFT_ARROW && this.x > 60) {
                 this.otherDirection = true;
                 this.moveLeft();
-            } else if (this.world.keyboard.KEY_D && this.bottleCount > 0 && !this.otherDirection) {
-                this.throw();
             }
+
+            let isThrowPressed = this.world.keyboard.KEY_D;
+            if (!isThrowPressed) {
+                this.throwKeyLatched = false;
+            } else if (!this.throwKeyLatched && this.bottleCount > 0 && !this.otherDirection) {
+                this.throw();
+                this.throwKeyLatched = true;
+            } else if (this.otherDirection) {
+                this.bottleCount -= 1;
+            }
+
             this.world.camera_x = -this.x + 60
         }, 1000 / 60);
     }

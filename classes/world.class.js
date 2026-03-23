@@ -5,6 +5,8 @@ import SmallChicken from "./small-chicken.class.js";
 import StatusBar from "./statusbar.class.js";
 
 export default class World {
+    MAX_BOTTLES = 5;
+    BOTTLE_PERCENT_STEP = 20;
     character = new Character();
     activeLevel;
     canvas;
@@ -137,9 +139,11 @@ export default class World {
      * @param index - The index of the collected bottle in the active level's bottles array
      */
     updateBottles(index) {
+        if (this.character.bottleCount >= this.MAX_BOTTLES) return;
+
         this.activeLevel.bottles.splice(index, 1);
-        this.character.bottleCount++;
-        this.statusBarBottles.setPercentage(this.character.bottleCount * 20);
+        this.character.bottleCount = Math.min(this.character.bottleCount + 1, this.MAX_BOTTLES);
+        this.statusBarBottles.setPercentage(this.character.bottleCount * this.BOTTLE_PERCENT_STEP);
     }
 
     /**
