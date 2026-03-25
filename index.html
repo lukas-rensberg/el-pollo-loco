@@ -40,12 +40,15 @@
 
         <div id="gameOverScreen" class="d-none">
             <img src="img/9_intro_outro_screens/game_over/you lost.png" alt="Game Over">
-            <button id="restartButton" onclick="restartGame()">Restart</button>
+            <div id="gameOverActions" class="endscreen-actions">
+                <button id="restartButton" onclick="restartGame()">Restart</button>
+                <button id="backToMenuButton" onclick="backToMainMenu()">Back to Main Menu</button>
+            </div>
         </div>
 
         <div id="win-screen" class="d-none">
             <img id="winScreenImage" src="img/You won, you lost/You Win A.png" alt="You won">
-            <button id="backToStartButton" onclick="window.location.reload()">Zurück zum Start</button>
+            <button id="backToStartButton" onclick="backToMainMenu()">Back to Main Menu</button>
         </div>
 
         <button id="muteButton" onclick="toggleMute(event)" aria-label="Ton umschalten" title="Ton an/aus">

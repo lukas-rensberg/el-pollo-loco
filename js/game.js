@@ -116,7 +116,21 @@ function initWinScreenImageRandomizer() {
 }
 
 function showWinScreen() {
-    document.getElementById('win-screen').style.display = 'flex';
+    stopActiveGameSession();
+    document.getElementById('gameOverScreen').classList.add('d-none');
+    document.getElementById('win-screen').classList.remove('d-none');
+}
+
+function stopActiveGameSession() {
+    if (world) {
+        world.stopped = true;
+        if (world.animationFrameId) {
+            cancelAnimationFrame(world.animationFrameId);
+            world.animationFrameId = null;
+        }
+    }
+
+    for (let i = 1; i < 9999; i++) window.clearInterval(i);
 }
 
 function isMobileViewport() {
@@ -304,7 +318,7 @@ function startGame() {
 function restartGame() {
     if (!canStartGameInCurrentOrientation()) return;
     maybeRequestFullscreenFromGesture();
-    for (let i = 1; i < 9999; i++) window.clearInterval(i);
+    stopActiveGameSession();
     closeAllDialogs();
     document.body.classList.remove('game-start-screen');
     document.getElementById('gameOverScreen').classList.add('d-none');
@@ -314,6 +328,21 @@ function restartGame() {
     hasGameStarted = true;
     playBackgroundMusic();
     generateWorld()
+}
+
+function backToMainMenu() {
+    stopActiveGameSession();
+    closeAllDialogs();
+
+    document.body.classList.add('game-start-screen');
+    document.getElementById('startScreen').classList.remove('d-none');
+    document.getElementById('gameOverScreen').classList.add('d-none');
+    document.getElementById('win-screen').classList.add('d-none');
+
+    keyboard = new Keyboard();
+    hasGameStarted = false;
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0;
 }
 
 /**
@@ -389,6 +418,7 @@ window.addEventListener("keyup", (event) => {
  */
 window.startGame = startGame;
 window.restartGame = restartGame;
+window.backToMainMenu = backToMainMenu;
 window.toggleMute = toggleMute;
 window.openDialog = openDialog;
 window.closeDialog = closeDialog;
