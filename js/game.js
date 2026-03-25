@@ -175,6 +175,14 @@ function requestFullscreenBestEffort() {
         .catch(() => false);
 }
 
+function tryEnterFullscreenInLandscape() {
+    if (!isMobileViewport() || isPortraitOrientation()) return;
+
+    requestFullscreenBestEffort().finally(() => {
+        updateFullscreenRequestState();
+    });
+}
+
 function toggleFullscreen() {
     const fullscreenTarget = getFullscreenTarget();
     if (!fullscreenTarget || !fullscreenTarget.requestFullscreen) return;
@@ -235,6 +243,7 @@ function refreshResponsiveLayout() {
     checkOrientation();
     updateMobileLayoutState();
     updateFullscreenRequestState();
+    tryEnterFullscreenInLandscape();
 }
 
 function bindTouchControl(buttonId, onPress, onRelease) {
@@ -452,10 +461,5 @@ window.addEventListener('resize', checkOrientation);
 window.addEventListener('orientationchange', () => setTimeout(() => {
     refreshResponsiveLayout();
     checkOrientation();
-
-    if (hasGameStarted && isMobileViewport() && !isPortraitOrientation()) {
-        requestFullscreenBestEffort().finally(() => {
-            updateFullscreenRequestState();
-        });
-    }
+    tryEnterFullscreenInLandscape();
 }, 50));
