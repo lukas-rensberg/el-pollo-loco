@@ -216,6 +216,10 @@ function checkOrientation() {
     const showWarning = isMobileViewport() && window.innerHeight > window.innerWidth;
     rotateWarning.style.display = showWarning ? 'flex' : 'none';
 
+    if (isMobileViewport() && !isPortraitOrientation()) {
+        closeDialog('controlsDialog');
+    }
+
     const isSmallLandscape = window.matchMedia('(orientation: landscape)').matches && window.innerHeight < 480;
     gameCanvas.classList.toggle('canvas--small-landscape', isSmallLandscape);
 }

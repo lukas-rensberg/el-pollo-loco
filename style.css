@@ -163,6 +163,12 @@ body:not(.game-start-screen) #uiButtons {
     display: none;
 }
 
+@media (pointer: coarse) and (orientation: landscape) {
+    #controls-info-btn {
+        display: none;
+    }
+}
+
 .uiIconButton {
     width: 44px;
     height: 44px;
