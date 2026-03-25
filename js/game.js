@@ -12,11 +12,24 @@ const ICON_UNMUTED = 'img/10_game_icons/volume-on.svg';
 const MOBILE_BREAKPOINT = 720;
 const FULLSCREEN_MIN_WIDTH = 640;
 const FULLSCREEN_MIN_HEIGHT = 360;
+const WIN_SCREEN_IMAGES = [
+    'img/You won, you lost/You Win A.png',
+    'img/You won, you lost/You win B.png',
+    'img/You won, you lost/You won A.png',
+    'img/You won, you lost/You Won B.png'
+];
 let backgroundMusic = new Audio('audio/bg-music.mp3');
 let isMuted = false;
 let hasGameStarted = false;
 let touchControlsInitialized = false;
 let shouldRequestFullscreen = false;
+let lastWinScreenImageIndex = -1;
+
+try {
+    isMuted = localStorage.getItem('mute') === 'true';
+} catch (_) {
+    isMuted = false;
+}
 
 backgroundMusic.loop = true;
 backgroundMusic.volume = BG_MUSIC_VOLUME;
@@ -41,6 +54,11 @@ function toggleMute(event) {
     }
 
     isMuted = !isMuted;
+    try {
+        localStorage.setItem('mute', String(isMuted));
+    } catch (_) {
+        // Ignore storage errors (e.g. private mode or blocked storage).
+    }
     applyMuteState();
 
     if (hasGameStarted && !isMuted && backgroundMusic.paused) {
@@ -66,6 +84,41 @@ function closeAllDialogs() {
     });
 }
 
+function setRandomWinScreenImage() {
+    const winScreenImage = document.getElementById('winScreenImage');
+    if (!winScreenImage || WIN_SCREEN_IMAGES.length === 0) return;
+
+    let randomIndex = Math.floor(Math.random() * WIN_SCREEN_IMAGES.length);
+    if (WIN_SCREEN_IMAGES.length > 1) {
+        while (randomIndex === lastWinScreenImageIndex) {
+            randomIndex = Math.floor(Math.random() * WIN_SCREEN_IMAGES.length);
+        }
+    }
+
+    lastWinScreenImageIndex = randomIndex;
+    winScreenImage.src = WIN_SCREEN_IMAGES[randomIndex];
+}
+
+function initWinScreenImageRandomizer() {
+    const winScreen = document.getElementById('win-screen');
+    if (!winScreen) return;
+
+    const winScreenClassObserver = new MutationObserver(() => {
+        if (!winScreen.classList.contains('d-none')) {
+            setRandomWinScreenImage();
+        }
+    });
+
+    winScreenClassObserver.observe(winScreen, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+}
+
+function showWinScreen() {
+    document.getElementById('win-screen').style.display = 'flex';
+}
+
 function isMobileViewport() {
     return window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches ||
         window.matchMedia('(pointer: coarse)').matches;
@@ -89,10 +142,25 @@ function isLandscapePlayfieldTooSmall() {
     return rect.width < FULLSCREEN_MIN_WIDTH || rect.height < FULLSCREEN_MIN_HEIGHT;
 }
 
+function getFullscreenTarget() {
+    return document.getElementById('gameContainer');
+}
+
 function requestFullscreenBestEffort() {
-    const fullscreenTarget = document.documentElement;
-    if (!fullscreenTarget.requestFullscreen || document.fullscreenElement) return;
+    const fullscreenTarget = getFullscreenTarget();
+    if (!fullscreenTarget || !fullscreenTarget.requestFullscreen || document.fullscreenElement) return;
     fullscreenTarget.requestFullscreen().catch(() => {});
+}
+
+function toggleFullscreen() {
+    const fullscreenTarget = getFullscreenTarget();
+    if (!fullscreenTarget || !fullscreenTarget.requestFullscreen) return;
+
+    if (!document.fullscreenElement) {
+        fullscreenTarget.requestFullscreen().catch(() => {});
+        return;
+    }
+    document.exitFullscreen().catch(() => {});
 }
 
 function maybeRequestFullscreenFromGesture() {
@@ -108,10 +176,15 @@ function updateViewportHeightUnit() {
 
 function checkOrientation() {
     const rotateWarning = document.getElementById('rotate-warning');
-    if (!rotateWarning) return;
+    const gameCanvas = document.getElementById('gameCanvas');
+    if (!rotateWarning || !gameCanvas) return;
+
 
     const showWarning = isMobileViewport() && window.innerHeight > window.innerWidth;
     rotateWarning.style.display = showWarning ? 'flex' : 'none';
+
+    const isSmallLandscape = window.matchMedia('(orientation: landscape)').matches && window.innerHeight < 480;
+    gameCanvas.classList.toggle('canvas--small-landscape', isSmallLandscape);
 }
 
 function updateMobileLayoutState() {
@@ -211,7 +284,10 @@ function startGame() {
     if (!canStartGameInCurrentOrientation()) return;
     maybeRequestFullscreenFromGesture();
     closeAllDialogs();
+    document.body.classList.remove('game-start-screen');
     document.getElementById('startScreen').classList.add('d-none');
+    document.getElementById('win-screen').classList.add('d-none');
+    setRandomWinScreenImage();
     hasGameStarted = true;
     playBackgroundMusic();
     generateWorld()
@@ -230,7 +306,10 @@ function restartGame() {
     maybeRequestFullscreenFromGesture();
     for (let i = 1; i < 9999; i++) window.clearInterval(i);
     closeAllDialogs();
+    document.body.classList.remove('game-start-screen');
     document.getElementById('gameOverScreen').classList.add('d-none');
+    document.getElementById('win-screen').classList.add('d-none');
+    setRandomWinScreenImage();
     keyboard = new Keyboard();
     hasGameStarted = true;
     playBackgroundMusic();
@@ -256,6 +335,10 @@ function generateWorld() {
     );
     world = new World(canvas, keyboard, activeLevel);
 }
+
+document.addEventListener('contextmenu', (event) => {
+    event.preventDefault();
+});
 
 /**
  * Event listeners for keyboard input are set up to track when specific keys are pressed and released.
@@ -309,15 +392,23 @@ window.restartGame = restartGame;
 window.toggleMute = toggleMute;
 window.openDialog = openDialog;
 window.closeDialog = closeDialog;
+window.showWinScreen = showWinScreen;
+
+const fullscreenButton = document.getElementById('fullscreen-btn');
+if (fullscreenButton) {
+    fullscreenButton.addEventListener('click', toggleFullscreen);
+}
 
 initTouchControls();
+initWinScreenImageRandomizer();
 checkOrientation();
 refreshResponsiveLayout();
+applyMuteState();
+setRandomWinScreenImage();
+
 window.addEventListener('resize', refreshResponsiveLayout);
 window.addEventListener('resize', checkOrientation);
 window.addEventListener('orientationchange', () => setTimeout(() => {
     refreshResponsiveLayout();
     checkOrientation();
 }, 50));
-
-applyMuteState();

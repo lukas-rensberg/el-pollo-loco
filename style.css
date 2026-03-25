@@ -43,11 +43,52 @@ h1 {
     aspect-ratio: 3 / 2;
 }
 
+#gameContainer:fullscreen,
+#gameContainer:-webkit-full-screen {
+    width: min(100vw, calc(100vh * 1.5));
+    height: min(100vh, calc(100vw / 1.5));
+    max-height: none;
+    margin: auto;
+}
+
+#gameContainer:fullscreen canvas,
+#gameContainer:-webkit-full-screen canvas,
+#gameContainer:fullscreen #startScreen,
+#gameContainer:-webkit-full-screen #startScreen,
+#gameContainer:fullscreen #gameOverScreen,
+#gameContainer:-webkit-full-screen #gameOverScreen,
+#gameContainer:fullscreen #win-screen,
+#gameContainer:-webkit-full-screen #win-screen {
+    width: 100%;
+    height: 100%;
+}
+
+#gameContainer:fullscreen #uiButtons,
+#gameContainer:-webkit-full-screen #uiButtons,
+#gameContainer:fullscreen #muteButton,
+#gameContainer:-webkit-full-screen #muteButton {
+    z-index: 20;
+}
+
+#gameContainer:fullscreen #mobile-controls,
+#gameContainer:-webkit-full-screen #mobile-controls {
+    width: min(94vw, 820px);
+    bottom: max(8px, env(safe-area-inset-bottom));
+}
+
 canvas {
     background-color: black;
     display: block;
     width: 100%;
     height: 100%;
+}
+
+.canvas--small-landscape {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc(var(--safe-vh) * 100);
 }
 
 #startScreen {
@@ -88,6 +129,27 @@ canvas {
     object-fit: cover;
 }
 
+#win-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 18px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #ffffff;
+    text-align: center;
+}
+
+#win-screen img {
+    width: min(92%, 900px);
+    max-height: 78%;
+    object-fit: contain;
+}
+
 #uiButtons {
     position: absolute;
     top: 16px;
@@ -95,6 +157,10 @@ canvas {
     z-index: 12;
     display: flex;
     gap: 10px;
+}
+
+body:not(.game-start-screen) #uiButtons {
+    display: none;
 }
 
 .uiIconButton {
@@ -157,7 +223,10 @@ canvas {
 }
 
 #restartButton {
-    margin-top: 20px;
+    margin-top: 0;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
     padding: 15px 40px;
     font-size: 24px;
     font-weight: bold;
@@ -168,17 +237,45 @@ canvas {
     border-radius: 10px;
     text-transform: uppercase;
     letter-spacing: 2px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+#backToStartButton {
+    position: static;
+    margin-top: 0;
+    padding: 15px 40px;
+    font-size: 24px;
+    font-weight: bold;
+    font-family: 'rye', serif;
+    color: white;
+    background-color: #e67e22;
+    border: 3px solid #d35400;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    line-height: 1;
+    white-space: nowrap;
 }
 
 #startButton:hover,
-#restartButton:hover {
+#backToStartButton:hover {
     background-color: #d35400;
     transform: scale(1.05);
 }
 
+#restartButton:hover {
+    background-color: #d35400;
+    transform: translateX(-50%) scale(1.05);
+}
+
 #startButton:active,
-#restartButton:active {
+#backToStartButton:active {
     transform: scale(0.95);
+}
+
+#restartButton:active {
+    transform: translateX(-50%) scale(0.95);
 }
 
 #muteButton {
@@ -225,7 +322,7 @@ canvas {
     position: absolute;
     inset: 0;
     z-index: 30;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.6);
     color: white;
     display: none;
     justify-content: center;
@@ -238,25 +335,42 @@ canvas {
 #mobile-controls {
     position: fixed;
     left: 50%;
-    bottom: 12px;
+    bottom: 8px;
     transform: translateX(-50%);
     z-index: 40;
     display: none;
-    gap: 12px;
-    width: min(96vw, 720px);
-    justify-content: center;
+    gap: 8px;
+    width: min(94vw, 640px);
+    justify-content: flex-start;
+}
+
+#btn-jump {
+    margin-left: auto;
 }
 
 .touchButton {
-    min-width: 72px;
-    height: 56px;
-    border: 2px solid #d35400;
-    border-radius: 12px;
-    background: rgba(230, 126, 34, 0.95);
+    min-width: 56px;
+    height: 44px;
+    border: 1px solid #a84300;
+    border-radius: 10px;
+    background: rgba(230, 126, 34, 0.68);
     color: white;
     font-family: 'Rye', sans-serif;
-    font-size: 18px;
+    font-size: 15px;
     cursor: pointer;
+}
+
+.touchButton--round {
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    line-height: 1;
 }
 
 #startScreen.d-none ~ #muteButton {
@@ -264,6 +378,10 @@ canvas {
 }
 
 #gameOverScreen:not(.d-none) ~ #muteButton {
+    display: none;
+}
+
+#win-screen:not(.d-none) ~ #muteButton {
     display: none;
 }
 
@@ -317,17 +435,68 @@ body.mobile-controls-visible #mobile-controls {
     display: flex;
 }
 
+#startScreen:not(.d-none) ~ #mobile-controls,
+#gameOverScreen:not(.d-none) ~ #mobile-controls,
+#win-screen:not(.d-none) ~ #mobile-controls {
+    display: none;
+}
+
 @media (max-width: 1024px), (pointer: coarse) {
     h1 {
         font-size: clamp(1.6rem, 5vw, 2.4rem);
         margin: 8px 0;
     }
 
-    #gameContainer {
-        width: min(var(--canvas-max-w), calc(100vw - 12px), calc((var(--safe-vh) * 100 - 90px) * 1.5));
-    }
-
+    #gameContainer,
     body.mobile-controls-visible #gameContainer {
-        width: min(var(--canvas-max-w), calc(100vw - 12px), calc((var(--safe-vh) * 100 - 150px) * 1.5));
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        max-height: none;
+        aspect-ratio: auto;
     }
 }
+
+@media (max-width: 900px), (max-height: 560px) {
+    #restartButton,
+    #backToStartButton {
+        padding: 12px 30px;
+        font-size: 20px;
+        letter-spacing: 1.5px;
+    }
+
+    #restartButton {
+        bottom: 18px;
+    }
+}
+
+@media (max-width: 720px), (max-height: 460px) {
+    #restartButton,
+    #backToStartButton {
+        padding: 10px 22px;
+        font-size: 17px;
+        border-width: 2px;
+        border-radius: 8px;
+        letter-spacing: 1px;
+    }
+
+    #restartButton {
+        bottom: 14px;
+    }
+}
+
+@media (max-width: 520px), (max-height: 390px) {
+    #restartButton,
+    #backToStartButton {
+        padding: 8px 16px;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    #restartButton {
+        bottom: 10px;
+    }
+}
+

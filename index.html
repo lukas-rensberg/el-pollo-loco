@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
@@ -8,7 +8,7 @@
     <title>Document</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="game-start-screen">
     <h1>El pollo loco</h1>
 
     <div id="rotate-warning" aria-live="polite">Bitte Gerät drehen</div>
@@ -26,6 +26,9 @@
             <button class="uiIconButton" onclick="openDialog('imprintDialog')" aria-label="Impressum" title="Impressum">
                 <img src="img/10_game_icons/info.svg" alt="Impressum">
             </button>
+            <button class="uiIconButton" id="fullscreen-btn" aria-label="Vollbild umschalten" title="Vollbild">
+                <img src="img/10_game_icons/play.svg" alt="Vollbild">
+            </button>
         </div>
 
         <div id="startScreen">
@@ -40,13 +43,18 @@
             <button id="restartButton" onclick="restartGame()">Restart</button>
         </div>
 
+        <div id="win-screen" class="d-none">
+            <img id="winScreenImage" src="img/You won, you lost/You Win A.png" alt="You won">
+            <button id="backToStartButton" onclick="window.location.reload()">Zurück zum Start</button>
+        </div>
+
         <button id="muteButton" onclick="toggleMute(event)" aria-label="Ton umschalten" title="Ton an/aus">
             <img id="muteIcon" src="img/10_game_icons/volume-on.svg" alt="Ton an">
         </button>
 
         <div id="mobile-controls" class="d-none" aria-label="Mobile Steuerung">
-            <button class="touchButton" id="btn-left" aria-label="Nach links">&#9664;</button>
-            <button class="touchButton" id="btn-right" aria-label="Nach rechts">&#9654;</button>
+            <button class="touchButton touchButton--round" id="btn-left" aria-label="Nach links">&#9664;</button>
+            <button class="touchButton touchButton--round" id="btn-right" aria-label="Nach rechts">&#9654;</button>
             <button class="touchButton" id="btn-jump" aria-label="Springen">Jump</button>
             <button class="touchButton" id="btn-throw" aria-label="Werfen">Throw</button>
         </div>

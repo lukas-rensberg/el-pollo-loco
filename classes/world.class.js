@@ -89,6 +89,7 @@ export default class World {
             });
 
             this.checkThrowableBottleCollisions();
+            this.checkIfEndbossDead();
         }, 1000 / 60)
     }
 
@@ -317,5 +318,17 @@ export default class World {
         }
         for (let i = 1; i < 9999; i++) window.clearInterval(i);
         document.getElementById('gameOverScreen').classList.remove('d-none');
+    }
+
+    /**
+     * Checks if the endboss is dead and shows the win screen.
+     */
+    checkIfEndbossDead() {
+        const endboss = this.activeLevel.enemies.find(enemy => enemy instanceof Endboss);
+        if (endboss && endboss.health <= 0) {
+            if (window.showWinScreen) {
+                window.showWinScreen();
+            }
+        }
     }
 }
