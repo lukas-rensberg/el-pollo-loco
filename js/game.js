@@ -160,10 +160,19 @@ function getFullscreenTarget() {
     return document.getElementById('gameContainer');
 }
 
+function updateFullscreenRequestState() {
+    shouldRequestFullscreen = isLandscapePlayfieldTooSmall() && !document.fullscreenElement;
+}
+
 function requestFullscreenBestEffort() {
     const fullscreenTarget = getFullscreenTarget();
-    if (!fullscreenTarget || !fullscreenTarget.requestFullscreen || document.fullscreenElement) return;
-    fullscreenTarget.requestFullscreen().catch(() => {});
+    if (!fullscreenTarget || !fullscreenTarget.requestFullscreen || document.fullscreenElement) {
+        return Promise.resolve(false);
+    }
+
+    return fullscreenTarget.requestFullscreen()
+        .then(() => true)
+        .catch(() => false);
 }
 
 function toggleFullscreen() {
@@ -179,8 +188,10 @@ function toggleFullscreen() {
 
 function maybeRequestFullscreenFromGesture() {
     if (!shouldRequestFullscreen) return;
-    requestFullscreenBestEffort();
-    shouldRequestFullscreen = false;
+
+    requestFullscreenBestEffort().finally(() => {
+        updateFullscreenRequestState();
+    });
 }
 
 function updateViewportHeightUnit() {
@@ -223,7 +234,7 @@ function refreshResponsiveLayout() {
     updateViewportHeightUnit();
     checkOrientation();
     updateMobileLayoutState();
-    shouldRequestFullscreen = isLandscapePlayfieldTooSmall();
+    updateFullscreenRequestState();
 }
 
 function bindTouchControl(buttonId, onPress, onRelease) {
@@ -441,4 +452,10 @@ window.addEventListener('resize', checkOrientation);
 window.addEventListener('orientationchange', () => setTimeout(() => {
     refreshResponsiveLayout();
     checkOrientation();
+
+    if (hasGameStarted && isMobileViewport() && !isPortraitOrientation()) {
+        requestFullscreenBestEffort().finally(() => {
+            updateFullscreenRequestState();
+        });
+    }
 }, 50));

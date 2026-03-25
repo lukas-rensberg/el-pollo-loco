@@ -196,8 +196,7 @@ body:not(.game-start-screen) #uiButtons {
     transform: scale(1.05);
 }
 
-#startButton,
-#restartButton {
+#startButton {
     position: absolute;
     z-index: 11;
     cursor: pointer;
@@ -222,11 +221,23 @@ body:not(.game-start-screen) #uiButtons {
     height: 36px;
 }
 
-#restartButton {
-    margin-top: 0;
+.endscreen-actions {
+    display: flex;
+    gap: 12px;
+}
+
+#gameOverActions {
+    position: absolute;
     left: 50%;
     bottom: 24px;
     transform: translateX(-50%);
+    z-index: 11;
+}
+
+#restartButton,
+#backToMenuButton,
+#backToStartButton {
+    margin-top: 0;
     padding: 15px 40px;
     font-size: 24px;
     font-weight: bold;
@@ -259,6 +270,7 @@ body:not(.game-start-screen) #uiButtons {
 }
 
 #startButton:hover,
+#backToMenuButton:hover,
 #backToStartButton:hover {
     background-color: #d35400;
     transform: scale(1.05);
@@ -266,16 +278,17 @@ body:not(.game-start-screen) #uiButtons {
 
 #restartButton:hover {
     background-color: #d35400;
-    transform: translateX(-50%) scale(1.05);
+    transform: scale(1.05);
 }
 
 #startButton:active,
+#backToMenuButton:active,
 #backToStartButton:active {
     transform: scale(0.95);
 }
 
 #restartButton:active {
-    transform: translateX(-50%) scale(0.95);
+    transform: scale(0.95);
 }
 
 #muteButton {
@@ -461,19 +474,21 @@ body.mobile-controls-visible #mobile-controls {
 
 @media (max-width: 900px), (max-height: 560px) {
     #restartButton,
+    #backToMenuButton,
     #backToStartButton {
         padding: 12px 30px;
         font-size: 20px;
         letter-spacing: 1.5px;
     }
 
-    #restartButton {
+    #gameOverActions {
         bottom: 18px;
     }
 }
 
 @media (max-width: 720px), (max-height: 460px) {
     #restartButton,
+    #backToMenuButton,
     #backToStartButton {
         padding: 10px 22px;
         font-size: 17px;
@@ -482,20 +497,25 @@ body.mobile-controls-visible #mobile-controls {
         letter-spacing: 1px;
     }
 
-    #restartButton {
+    #gameOverActions {
         bottom: 14px;
     }
 }
 
 @media (max-width: 520px), (max-height: 390px) {
     #restartButton,
+    #backToMenuButton,
     #backToStartButton {
         padding: 8px 16px;
         font-size: 14px;
         letter-spacing: 1px;
     }
 
-    #restartButton {
+    .endscreen-actions {
+        gap: 8px;
+    }
+
+    #gameOverActions {
         bottom: 10px;
     }
 }
