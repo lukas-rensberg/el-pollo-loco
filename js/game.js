@@ -7,6 +7,7 @@ let canvas;
 let world;
 let keyboard = new Keyboard();
 const BG_MUSIC_VOLUME = 0.2;
+const LOST_SOUND_VOLUME = 1;
 const ICON_MUTED = 'img/10_game_icons/mute.svg';
 const ICON_UNMUTED = 'img/10_game_icons/volume-on.svg';
 const MOBILE_BREAKPOINT = 720;
@@ -19,6 +20,7 @@ const WIN_SCREEN_IMAGES = [
     'img/You won, you lost/You Won B.png'
 ];
 let backgroundMusic = new Audio('audio/bg-music.mp3');
+let lostSound = new Audio('audio/lost.mp3');
 let isMuted = false;
 let hasGameStarted = false;
 let touchControlsInitialized = false;
@@ -33,6 +35,8 @@ try {
 
 backgroundMusic.loop = true;
 backgroundMusic.volume = BG_MUSIC_VOLUME;
+lostSound.loop = false;
+lostSound.volume = LOST_SOUND_VOLUME;
 
 function updateMuteButtonIcon() {
     const muteIcon = document.getElementById('muteIcon');
@@ -44,6 +48,7 @@ function updateMuteButtonIcon() {
 
 function applyMuteState() {
     backgroundMusic.muted = isMuted;
+    lostSound.muted = isMuted;
     updateMuteButtonIcon();
 }
 
@@ -117,8 +122,24 @@ function initWinScreenImageRandomizer() {
 
 function showWinScreen() {
     stopActiveGameSession();
+    lostSound.pause();
+    lostSound.currentTime = 0;
     document.getElementById('gameOverScreen').classList.add('d-none');
     document.getElementById('win-screen').classList.remove('d-none');
+}
+
+function showGameOverScreen() {
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    if (!gameOverScreen || !gameOverScreen.classList.contains('d-none')) return;
+
+    stopActiveGameSession();
+    document.getElementById('win-screen').classList.add('d-none');
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0;
+    lostSound.pause();
+    lostSound.currentTime = 0;
+    lostSound.play().catch(() => {});
+    gameOverScreen.classList.remove('d-none');
 }
 
 function stopActiveGameSession() {
@@ -324,7 +345,10 @@ function startGame() {
     closeAllDialogs();
     document.body.classList.remove('game-start-screen');
     document.getElementById('startScreen').classList.add('d-none');
+    document.getElementById('gameOverScreen').classList.add('d-none');
     document.getElementById('win-screen').classList.add('d-none');
+    lostSound.pause();
+    lostSound.currentTime = 0;
     setRandomWinScreenImage();
     hasGameStarted = true;
     playBackgroundMusic();
@@ -347,6 +371,8 @@ function restartGame() {
     document.body.classList.remove('game-start-screen');
     document.getElementById('gameOverScreen').classList.add('d-none');
     document.getElementById('win-screen').classList.add('d-none');
+    lostSound.pause();
+    lostSound.currentTime = 0;
     setRandomWinScreenImage();
     keyboard = new Keyboard();
     hasGameStarted = true;
@@ -367,6 +393,8 @@ function backToMainMenu() {
     hasGameStarted = false;
     backgroundMusic.pause();
     backgroundMusic.currentTime = 0;
+    lostSound.pause();
+    lostSound.currentTime = 0;
 }
 
 /**
@@ -447,6 +475,7 @@ window.toggleMute = toggleMute;
 window.openDialog = openDialog;
 window.closeDialog = closeDialog;
 window.showWinScreen = showWinScreen;
+window.showGameOverScreen = showGameOverScreen;
 
 const fullscreenButton = document.getElementById('fullscreen-btn');
 if (fullscreenButton) {

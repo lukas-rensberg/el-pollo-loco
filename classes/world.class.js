@@ -311,6 +311,11 @@ export default class World {
     showGameOverScreen() {
         if (this.gameOverShown) return;
         this.gameOverShown = true;
+        if (window.showGameOverScreen) {
+            window.showGameOverScreen();
+            return;
+        }
+
         this.stopped = true;
         if (this.animationFrameId) {
             cancelAnimationFrame(this.animationFrameId);
