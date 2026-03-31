@@ -263,7 +263,7 @@ window.closeDialog = closeDialog;
 window.showWinScreen = showWinScreen;
 window.showGameOverScreen = showGameOverScreen;
 
-const fullscreenButton = document.getElementById('fullscreen-btnSt');
+const fullscreenButton = document.getElementById('fullscreen-btn');
 if (fullscreenButton) {
     fullscreenButton.addEventListener('click', toggleFullscreen);
 }
