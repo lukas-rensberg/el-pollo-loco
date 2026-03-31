@@ -20,12 +20,13 @@ export default class World {
     gameOverShown = false;
     animationFrameId = null;
     stopped = false;
+    sounds = null;
 
     /**
-     * Creates the world instance and wires canvas, input state and active level.
+     * Creates the world instance and wires canvas, input state, and active level.
      * @param {HTMLCanvasElement} canvas - Canvas element used for rendering.
      * @param {Keyboard} keyboard - Shared keyboard input state.
-     * @param {Level} level - Active level with enemies, background objects, clouds and coins.
+     * @param {Level} level - Active level with enemies, background objects, clouds, and coins.
      */
     constructor(canvas, keyboard, level) {
         this.canvas = canvas;
@@ -55,7 +56,7 @@ export default class World {
     checkCollisions() {
         setInterval(() => {
             this.isCharColliding(this.activeLevel.enemies, (enemy) => {
-                if (enemy.isDead() 
+                if (enemy.isDead()
                     || !this.isEnemyHittingCharacter(enemy)
                 ) return;
 
@@ -90,9 +91,9 @@ export default class World {
 
             this.checkThrowableBottleCollisions();
             this.checkIfEndbossDead();
+            this.updateWalkingSound();
         }, 1000 / 60)
     }
-
     /**
      * Breaks thrown bottles when they hit the ground or the endboss and removes them after splash animation.
      */
@@ -143,11 +144,12 @@ export default class World {
         this.activeLevel.coins.splice(index, 1);
         this.coinPercentage = Math.min(this.coinPercentage + amount, 100);
         this.statusBarCoins.setPercentage(this.coinPercentage);
+        this.playSound('coin');
     }
 
     /**
      * Updates the bottle count and removes the collected bottle from the level.
-     * @param index - The index of the collected bottle in the active level's bottles array
+     * @param index - The index of the collected bottle in the active level's bottle array
      */
     updateBottles(index) {
         if (this.character.bottleCount >= this.MAX_BOTTLES) return;
@@ -155,6 +157,7 @@ export default class World {
         this.activeLevel.bottles.splice(index, 1);
         this.character.bottleCount = Math.min(this.character.bottleCount + 1, this.MAX_BOTTLES);
         this.statusBarBottles.setPercentage(this.character.bottleCount * this.BOTTLE_PERCENT_STEP);
+        this.playSound('bottle');
     }
 
     /**
@@ -282,7 +285,7 @@ export default class World {
 
     /**
      * Helper function to flip the image horizontally by translating
-     * and scaling the context, and adjusting the object's x position
+     * and scaling the context and adjusting the object's x position
      * accordingly.
      * @param obj - The object whose image should be flipped
      */
@@ -306,7 +309,7 @@ export default class World {
      * Displays the game over screen by
      * - stopping the game loop,
      * - clearing all intervals,
-     * - and showing the game over screen element
+     * - and showing the game-over-screen element
      */
     showGameOverScreen() {
         if (this.gameOverShown) return;
@@ -334,6 +337,37 @@ export default class World {
             if (window.showWinScreen) {
                 window.showWinScreen();
             }
+        }
+    }
+
+    /**
+     * Plays a short sound effect by name if sounds are available.
+     * Resets currentTime so rapid pickups re-trigger the sound.
+     * @param {string} name - Key in the sound object (e.g. 'coin', 'bottle', 'throw')
+     */
+    playSound(name) {
+        if (!this.sounds || !this.sounds[name]) return;
+        const sound = this.sounds[name];
+        sound.currentTime = 0;
+        sound.play().catch(() => {});
+    }
+
+    /**
+     * Starts or stops the walking sound based on whether the character is
+     * moving on the ground and alive.
+     */
+    updateWalkingSound() {
+        if (!this.sounds || !this.sounds.walking) return;
+        const walking = this.sounds.walking;
+        const isWalking = !this.character.isDead()
+            && !this.character.isAboveGround()
+            && (this.keyboard.RIGHT_ARROW || this.keyboard.LEFT_ARROW);
+
+        if (isWalking && walking.paused) {
+            walking.play().catch(() => {});
+        } else if (!isWalking && !walking.paused) {
+            walking.pause();
+            walking.currentTime = 0;
         }
     }
 }

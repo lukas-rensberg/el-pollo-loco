@@ -122,11 +122,12 @@ export default class Character extends MovableObject {
         let throwToRight = !this.otherDirection;
         let throwX = throwToRight ? this.x + this.width + 30 : this.x - 60;
         let throwY = this.y + 100;
-        
+
         let bottle = new SalsaBottle(throwX, throwY, throwToRight);
         this.world.activeLevel.throwableBottles.push(bottle);
         this.bottleCount--;
         this.world.statusBarBottles.setPercentage(this.bottleCount * 20);
+        this.playSound("throw");
     }
 
     isNearBoss() {
