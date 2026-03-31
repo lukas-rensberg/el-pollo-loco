@@ -11,6 +11,7 @@ import {
     refreshResponsiveLayout, canStartGameInCurrentOrientation,
     initTouchControls, tryEnterFullscreenInLandscape
 } from "./input.js";
+import { resetIdleTimer } from "./idle-timer.js";
 
 let canvas;
 let world;
@@ -216,6 +217,7 @@ document.addEventListener('contextmenu', (event) => {
 });
 
 window.addEventListener("keydown", (event) => {
+    resetIdleTimer();
     switch (event.code) {
         case "Space":
             event.preventDefault();
@@ -274,6 +276,10 @@ checkOrientation();
 refreshResponsiveLayout();
 applyMuteState();
 setRandomWinScreenImage();
+
+['click', 'touchstart', 'mousemove'].forEach(type =>
+    document.addEventListener(type, resetIdleTimer, { passive: true })
+);
 
 window.addEventListener('resize', refreshResponsiveLayout);
 window.addEventListener('resize', checkOrientation);

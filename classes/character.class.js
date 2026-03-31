@@ -1,6 +1,12 @@
 import MovableObject from "./movable-object.class.js";
 import SalsaBottle from "./salsa-bottle.class.js";
+import { isIdle } from '../js/idle-timer.js';
 
+/**
+ * The player-controlled character Pepe.
+ * Manages movement, jumping, throwing bottles, and all animation states:
+ * walking, jumping, hurt, dead, and sleep (triggered after 15 s of user inactivity).
+ */
 export default class Character extends MovableObject {
     x = 60
     y = 130
@@ -45,6 +51,7 @@ export default class Character extends MovableObject {
         "img/2_character_pepe/5_dead/D-56.png",
         "img/2_character_pepe/5_dead/D-57.png"
     ]
+    /** Long-idle / sleep frames, played after 15 s of inactivity. */
     IMAGES_IDLE = [
         "img/2_character_pepe/1_idle/long_idle/I-11.png",
         "img/2_character_pepe/1_idle/long_idle/I-12.png",
@@ -59,6 +66,9 @@ export default class Character extends MovableObject {
     ]
     world;
 
+    /**
+     * Loads all sprite sheets and starts the physics and animation loops.
+     */
     constructor() {
         super().loadImage("img/2_character_pepe/1_idle/idle/I-1.png");
         this.loadImages(this.IMAGES_IDLE);
@@ -67,34 +77,43 @@ export default class Character extends MovableObject {
         this.loadImages(this.IMAGES_HURT);
         this.loadImages(this.IMAGES_DEAD);
 
-        this.applyGravity()
-        this.animate()
+        this.applyGravity();
+        this.animate();
     }
 
+    /**
+     * Starts two independent interval loops:
+     * 1. Animation interval (50 ms) — selects the active sprite strip based on
+     *    movement and health state; falls back to the sleep animation after
+     *    15 seconds of user inactivity ({@link isIdle}).
+     * 2. Game-logic interval (60 FPS) — processes movement input, jumping, throwing,
+     *    and updates the camera offset.
+     * @returns {void}
+     */
     animate() {
         setInterval(() => {
             if (this.isAboveGround()) {
-                this.playAnimation(this.IMAGES_JUMPING)
+                this.playAnimation(this.IMAGES_JUMPING);
             } else if (this.isHurt()) {
                 this.playAnimation(this.IMAGES_HURT);
+            } else if (this.world.keyboard.RIGHT_ARROW || this.world.keyboard.LEFT_ARROW) {
+                this.playAnimation(this.IMAGES_WALKING);
+            } else if (!this.isDead() && isIdle()) {
+                this.playAnimation(this.IMAGES_IDLE);
             } else {
-                if (this.world.keyboard.RIGHT_ARROW || this.world.keyboard.LEFT_ARROW) {
-                    this.playAnimation(this.IMAGES_WALKING);
-                } else {
-                    this.loadImage("img/2_character_pepe/1_idle/idle/I-1.png");
-                }
+                this.loadImage("img/2_character_pepe/1_idle/idle/I-1.png");
             }
-        }, 50)
+        }, 50);
 
         setInterval(() => {
             if (this.isDead()) {
-                this.playAnimation(this.IMAGES_DEAD)
-                this.world.showGameOverScreen()
+                this.playAnimation(this.IMAGES_DEAD);
+                this.world.showGameOverScreen();
             } else if (this.world.keyboard.SPACE && !this.isAboveGround()) {
-                this.jump()
+                this.jump();
             } else if (this.world.keyboard.RIGHT_ARROW && this.x < this.world.activeLevel.level_end_x) {
                 this.otherDirection = false;
-                this.moveRight()
+                this.moveRight();
             } else if (this.world.keyboard.LEFT_ARROW && this.x > 60) {
                 this.otherDirection = true;
                 this.moveLeft();
@@ -110,10 +129,16 @@ export default class Character extends MovableObject {
                 this.bottleCount -= 1;
             }
 
-            this.world.camera_x = -this.x + 60
+            this.world.camera_x = -this.x + 60;
         }, 1000 / 60);
     }
 
+    /**
+     * Creates and launches a {@link SalsaBottle} from the character's current position.
+     * Enforces {@link THROW_COOLDOWN} between consecutive throws and deducts one bottle
+     * from the inventory.
+     * @returns {void}
+     */
     throw() {
         let now = new Date().getTime();
         if (now - this.lastThrowTime < this.THROW_COOLDOWN) return;
@@ -130,6 +155,11 @@ export default class Character extends MovableObject {
         this.playSound("throw");
     }
 
+    /**
+     * Returns true when the character's x position exceeds the threshold
+     * that triggers the endboss encounter.
+     * @returns {boolean}
+     */
     isNearBoss() {
         return this.x > 5073;
     }

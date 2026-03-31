@@ -1,5 +1,10 @@
 import MovableObject from "./movable-object.class.js";
 
+/**
+ * The level's final boss — a giant chicken.
+ * Stays still until the character enters the boss arena (detected via
+ * {@link Character#isNearBoss}), then charges left at full speed.
+ */
 export default class Endboss extends MovableObject {
     IMAGES_WALKING = [
         "img/4_enemie_boss_chicken/1_walk/G1.png",
@@ -23,18 +28,30 @@ export default class Endboss extends MovableObject {
     speed = 1
     hasBeenTriggered = false
 
+    /**
+     * Loads walking sprites, positions the boss at the given x coordinate,
+     * and starts animation and trigger-detection loops.
+     * @param {number} x - Horizontal starting position within the level.
+     */
     constructor(x) {
         super().loadImage(this.IMAGES_WALKING[0]);
-        this.loadImages(this.IMAGES_WALKING)
+        this.loadImages(this.IMAGES_WALKING);
         this.x = x;
 
-        this.animate()
+        this.animate();
     }
 
+    /**
+     * Starts two independent intervals:
+     * 1. Sprite interval (200 ms) — cycles walking frames continuously.
+     * 2. Movement interval (60 FPS) — waits until the character is near the boss,
+     *    then moves left every tick until defeated.
+     * @returns {void}
+     */
     animate() {
         setInterval(() => {
             this.playAnimation(this.IMAGES_WALKING);
-        }, 200)
+        }, 200);
 
         setInterval(() => {
             if (!this.world) return;
@@ -43,7 +60,6 @@ export default class Endboss extends MovableObject {
             }
             if (!this.hasBeenTriggered) return;
             this.moveLeft();
-        }, 1000 / 60)
+        }, 1000 / 60);
     }
-
 }

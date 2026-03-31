@@ -1,5 +1,10 @@
 import MovableObject from "./movable-object.class.js";
 
+/**
+ * A standard enemy chicken that continuously walks left across the level.
+ * Speed is randomised slightly on construction to avoid uniform movement.
+ * Plays a death image when killed and is removed from the level after a delay.
+ */
 export default class Chicken extends MovableObject {
     y = 350
     height = 75
@@ -14,21 +19,37 @@ export default class Chicken extends MovableObject {
         "img/3_enemies_chicken/chicken_normal/2_dead/dead.png"
     ]
 
+    /**
+     * Loads the default image, randomises starting position and speed,
+     * then starts animation and movement loops.
+     */
     constructor() {
         super().loadImage("img/3_enemies_chicken/chicken_normal/1_walk/1_w.png");
-        this.initialize()
+        this.initialize();
         this.speed = this.speed + Math.random() * 0.25;
     }
 
+    /**
+     * Preloads sprite sheets, sets a random starting x position within the level,
+     * and starts the animation loop.
+     * Extracted so {@link SmallChicken} can call it after overriding images.
+     * @returns {void}
+     */
     initialize() {
         this.loadImages(this.IMAGES_WALKING);
         this.loadImages(this.IMAGES_DEAD);
 
         this.x = 300 + Math.random() * 2500;
 
-        this.animate()
+        this.animate();
     }
 
+    /**
+     * Starts two independent intervals:
+     * 1. Sprite interval (200 ms) — cycles walking or dead frames.
+     * 2. Movement interval (60 FPS) — moves left each tick while alive.
+     * @returns {void}
+     */
     animate() {
         setInterval(() => {
             if (this.isDead()) {
@@ -42,6 +63,12 @@ export default class Chicken extends MovableObject {
         }, 1000 / 60);
     }
 
+    /**
+     * Immediately kills the chicken by zeroing health and speed.
+     * The actual removal from the level is deferred by {@link World#removeEnemy}
+     * to allow the death animation to complete.
+     * @returns {void}
+     */
     kill() {
         this.health = 0;
         this.speed = 0;

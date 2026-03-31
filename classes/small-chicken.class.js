@@ -1,5 +1,10 @@
 import Chicken from "./chicken.class.js";
 
+/**
+ * A smaller, faster variant of {@link Chicken}.
+ * Overrides sprite paths and dimensions; behaviour is otherwise identical
+ * to the base Chicken class.
+ */
 export default class SmallChicken extends Chicken {
     y = 375
     height = 50
@@ -14,11 +19,20 @@ export default class SmallChicken extends Chicken {
         "img/3_enemies_chicken/chicken_small/2_dead/dead.png"
     ]
 
+    /**
+     * Loads the small chicken's default image and delegates to {@link Chicken#initialize}
+     * with the overridden image arrays already in place.
+     */
     constructor() {
         super().loadImage("img/3_enemies_chicken/chicken_small/1_walk/1_w.png");
-        this.initialize()
+        this.initialize();
     }
 
+    /**
+     * Starts two independent intervals identical to {@link Chicken#animate}
+     * but using the small chicken sprite strips.
+     * @returns {void}
+     */
     animate() {
         setInterval(() => {
             if (this.isDead()) {

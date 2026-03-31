@@ -1,8 +1,21 @@
+/* ===== Fonts ===== */
 @font-face {
     font-family: 'Rye';
     src: url('fonts/rye.ttf') format('truetype');
 }
 
+/* ===== Design tokens ===== */
+:root {
+    --color-primary:      #e67e22;
+    --color-primary-dark: #d35400;
+    --color-overlay:      rgba(0, 0, 0, 0.45);
+    --color-overlay-hover:rgba(0, 0, 0, 0.65);
+    --transition-ui:      all 0.2s ease;
+    --btn-border:         3px solid var(--color-primary-dark);
+    --icon-btn-size:      44px;
+}
+
+/* ===== Base ===== */
 body {
     font-family: 'Rye', sans-serif;
     margin: 0;
@@ -20,6 +33,7 @@ h1 {
     margin: 12px 0;
 }
 
+/* ===== Page background ===== */
 #backgroundImage {
     position: absolute;
     top: 0;
@@ -30,6 +44,7 @@ h1 {
     z-index: -1;
 }
 
+/* ===== Game container ===== */
 #gameContainer {
     position: relative;
     width: min(720px, calc(100vw - 24px), calc((100vh - 110px) * 1.5));
@@ -70,6 +85,7 @@ h1 {
     bottom: max(8px, env(safe-area-inset-bottom));
 }
 
+/* ===== Canvas ===== */
 canvas {
     background-color: black;
     display: block;
@@ -85,6 +101,7 @@ canvas {
     height: 100vh;
 }
 
+/* ===== Game screens ===== */
 #startScreen {
     position: absolute;
     top: 0;
@@ -144,6 +161,7 @@ canvas {
     object-fit: contain;
 }
 
+/* ===== UI button bar (start screen only) ===== */
 #uiButtons {
     position: absolute;
     top: 16px;
@@ -157,27 +175,24 @@ body:not(.game-start-screen) #uiButtons {
     display: none;
 }
 
-@media (pointer: coarse) and (orientation: landscape) {
-    #controls-info-btn {
-        display: none;
-    }
-}
-
-.uiIconButton {
-    width: 44px;
-    height: 44px;
+/* ===== Icon buttons — shared base for .uiIconButton and #muteButton ===== */
+.uiIconButton,
+#muteButton {
+    width: var(--icon-btn-size);
+    height: var(--icon-btn-size);
     border: 0;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.45);
+    background: var(--color-overlay);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     padding: 0;
-    transition: all 0.2s ease;
+    transition: var(--transition-ui);
 }
 
-.uiIconButton img {
+.uiIconButton img,
+#muteButton img {
     width: 24px;
     height: 24px;
 }
@@ -191,29 +206,37 @@ body:not(.game-start-screen) #uiButtons {
     stroke-linejoin: round;
 }
 
-.uiIconButton:hover {
-    background: rgba(0, 0, 0, 0.65);
+.uiIconButton:hover,
+#muteButton:hover {
+    background: var(--color-overlay-hover);
     transform: scale(1.05);
 }
 
+/* Mute button positioning — hidden by default, revealed by sibling selectors below */
+#muteButton {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 12;
+    display: none;
+}
+
+/* ===== Start button ===== */
 #startButton {
     position: absolute;
     z-index: 11;
     cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-#startButton {
     margin-top: 50px;
     width: 84px;
     height: 84px;
-    border: 3px solid #d35400;
+    border: var(--btn-border);
     border-radius: 50%;
-    background-color: #e67e22;
+    background-color: var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
+    transition: var(--transition-ui);
 }
 
 #startButton img {
@@ -221,6 +244,7 @@ body:not(.game-start-screen) #uiButtons {
     height: 36px;
 }
 
+/* ===== End-screen action buttons ===== */
 .endscreen-actions {
     display: flex;
     gap: 12px;
@@ -243,67 +267,43 @@ body:not(.game-start-screen) #uiButtons {
     font-weight: bold;
     font-family: 'rye', serif;
     color: white;
-    background-color: #e67e22;
-    border: 3px solid #d35400;
+    background-color: var(--color-primary);
+    border: var(--btn-border);
     border-radius: 10px;
     text-transform: uppercase;
     letter-spacing: 2px;
     line-height: 1;
     white-space: nowrap;
+    cursor: pointer;
 }
 
-#backToStartButton {
-    position: static;
-}
-
+/* Combined hover and active states for all game buttons */
 #startButton:hover,
+#restartButton:hover,
 #backToMenuButton:hover,
 #backToStartButton:hover {
-    background-color: #d35400;
-    transform: scale(1.05);
-}
-
-#restartButton:hover {
-    background-color: #d35400;
+    background-color: var(--color-primary-dark);
     transform: scale(1.05);
 }
 
 #startButton:active,
+#restartButton:active,
 #backToMenuButton:active,
 #backToStartButton:active {
     transform: scale(0.95);
 }
 
-#restartButton:active {
-    transform: scale(0.95);
+/* ===== Mute button visibility (sibling-selector driven) ===== */
+#startScreen.d-none ~ #muteButton {
+    display: flex;
 }
 
-#muteButton {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    z-index: 12;
-    width: 44px;
-    height: 44px;
-    border: 0;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.45);
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 0;
+#gameOverScreen:not(.d-none) ~ #muteButton,
+#win-screen:not(.d-none) ~ #muteButton {
     display: none;
 }
 
-#muteButton img {
-    width: 24px;
-    height: 24px;
-}
-
-#muteButton:hover {
-    background: rgba(0, 0, 0, 0.65);
-}
-
+/* ===== Rotate warning overlay ===== */
 #rotate-warning {
     position: fixed;
     inset: 0;
@@ -318,20 +318,7 @@ body:not(.game-start-screen) #uiButtons {
     font-size: clamp(22px, 6vw, 36px);
 }
 
-#mobilePortraitOverlay {
-    position: absolute;
-    inset: 0;
-    z-index: 30;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 24px;
-    font-size: 28px;
-}
-
+/* ===== Mobile touch controls ===== */
 #mobile-controls {
     position: fixed;
     left: 50%;
@@ -373,20 +360,9 @@ body:not(.game-start-screen) #uiButtons {
     line-height: 1;
 }
 
-#startScreen.d-none ~ #muteButton {
-    display: flex;
-}
-
-#gameOverScreen:not(.d-none) ~ #muteButton {
-    display: none;
-}
-
-#win-screen:not(.d-none) ~ #muteButton {
-    display: none;
-}
-
+/* ===== Dialogs ===== */
 .gameDialog {
-    border: 3px solid #d35400;
+    border: var(--btn-border);
     border-radius: 12px;
     padding: 18px;
     max-width: 480px;
@@ -407,9 +383,9 @@ body:not(.game-start-screen) #uiButtons {
 .dialogCloseButton {
     margin-top: 14px;
     padding: 8px 14px;
-    border: 2px solid #d35400;
+    border: 2px solid var(--color-primary-dark);
     border-radius: 8px;
-    background-color: #e67e22;
+    background-color: var(--color-primary);
     color: white;
     font-family: 'Rye', sans-serif;
     cursor: pointer;
@@ -418,92 +394,7 @@ body:not(.game-start-screen) #uiButtons {
     justify-content: center;
 }
 
+/* ===== Utilities ===== */
 .d-none {
     display: none !important;
 }
-
-
-body.mobile-portrait #mobilePortraitOverlay {
-    display: flex;
-}
-
-body.mobile-portrait #mobile-controls {
-    display: none;
-}
-
-body.mobile-controls-visible #mobile-controls {
-    display: flex;
-}
-
-#startScreen:not(.d-none) ~ #mobile-controls,
-#gameOverScreen:not(.d-none) ~ #mobile-controls,
-#win-screen:not(.d-none) ~ #mobile-controls {
-    display: none;
-}
-
-@media (max-width: 1024px), (pointer: coarse) {
-    h1 {
-        font-size: clamp(1.6rem, 5vw, 2.4rem);
-        margin: 8px 0;
-    }
-
-    #gameContainer,
-    body.mobile-controls-visible #gameContainer {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100vh;
-        max-height: none;
-        aspect-ratio: auto;
-    }
-}
-
-@media (max-width: 900px), (max-height: 560px) {
-    #restartButton,
-    #backToMenuButton,
-    #backToStartButton {
-        padding: 12px 30px;
-        font-size: 20px;
-        letter-spacing: 2px;
-    }
-
-    #gameOverActions {
-        bottom: 18px;
-    }
-}
-
-@media (max-width: 720px), (max-height: 460px) {
-    #restartButton,
-    #backToMenuButton,
-    #backToStartButton {
-        padding: 10px 22px;
-        font-size: 17px;
-        border-width: 2px;
-        border-radius: 8px;
-        letter-spacing: 1px;
-    }
-
-    #gameOverActions {
-        bottom: 14px;
-    }
-}
-
-@media (max-width: 520px), (max-height: 390px) {
-    #restartButton,
-    #backToMenuButton,
-    #backToStartButton {
-        padding: 8px 16px;
-        font-size: 14px;
-        letter-spacing: 1px;
-    }
-
-    .endscreen-actions {
-        gap: 8px;
-    }
-
-    #gameOverActions {
-        bottom: 10px;
-    }
-}
-

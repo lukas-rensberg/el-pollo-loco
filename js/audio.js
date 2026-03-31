@@ -16,6 +16,7 @@ export let bottleSound = new Audio('audio/bottle.mp3');
 export let throwSound = new Audio('audio/throw.mp3');
 export let walkingSound = new Audio('audio/pepe-walking.mp3');
 
+/** Whether all game audio is currently muted. Persisted to localStorage. */
 export let isMuted = false;
 
 try {
@@ -36,6 +37,10 @@ throwSound.volume = THROW_SOUND_VOLUME;
 walkingSound.loop = true;
 walkingSound.volume = WALKING_SOUND_VOLUME;
 
+/**
+ * Swaps the mute button icon to reflect the current {@link isMuted} state.
+ * @returns {void}
+ */
 function updateMuteButtonIcon() {
     const muteIcon = document.getElementById('muteIcon');
     if (!muteIcon) return;
@@ -44,6 +49,11 @@ function updateMuteButtonIcon() {
     muteIcon.alt = isMuted ? 'Ton aus' : 'Ton an';
 }
 
+/**
+ * Mutes or unmutes every audio object and updates the mute button icon.
+ * Call this whenever {@link isMuted} changes.
+ * @returns {void}
+ */
 export function applyMuteState() {
     backgroundMusic.muted = isMuted;
     lostSound.muted = isMuted;
@@ -55,11 +65,23 @@ export function applyMuteState() {
     updateMuteButtonIcon();
 }
 
+/**
+ * Resets {@link backgroundMusic} to the beginning and starts playback.
+ * Errors (e.g. autoplay policy) are silently ignored.
+ * @returns {void}
+ */
 export function playBackgroundMusic() {
     backgroundMusic.currentTime = 0;
     backgroundMusic.play().catch(() => {});
 }
 
+/**
+ * Sets the module-level {@link isMuted} flag.
+ * After calling this, invoke {@link applyMuteState} to propagate the change
+ * to all audio objects.
+ * @param {boolean} value - True to mute, false to unmute.
+ * @returns {void}
+ */
 export function setMuted(value) {
     isMuted = value;
 }
