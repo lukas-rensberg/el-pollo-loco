@@ -17,10 +17,7 @@ body.mobile-controls-visible #mobile-controls {
     display: none;
 }
 
-/* ===== Breakpoints ===== */
-
-/* Mobile / touch: full-viewport game container */
-@media (max-width: 1024px), (pointer: coarse) {
+@media (max-width: 1024px) {
     h1 {
         font-size: clamp(1.6rem, 5vw, 2.4rem);
         margin: 8px 0;
@@ -41,6 +38,7 @@ body.mobile-controls-visible #mobile-controls {
 /* Medium screens / short viewports */
 @media (max-width: 900px), (max-height: 560px) {
     #restartButton,
+    #playAgainButton,
     #backToMenuButton,
     #backToStartButton {
         padding: 12px 30px;
@@ -54,6 +52,7 @@ body.mobile-controls-visible #mobile-controls {
 /* Small screens / very short viewports */
 @media (max-width: 720px), (max-height: 460px) {
     #restartButton,
+    #playAgainButton,
     #backToMenuButton,
     #backToStartButton {
         padding: 10px 22px;

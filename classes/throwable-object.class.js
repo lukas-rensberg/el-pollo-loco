@@ -93,21 +93,21 @@ export default class ThrowableObject extends MovableObject {
     }
 
     /**
-     * Stops all movement, clears flight intervals, and plays the splash
-     * animation frame-by-frame. Sets {@link markedForRemoval} when the
-     * splash sequence ends.
+     * Clears all in-flight intervals (gravity, rotation, movement).
      * @returns {void}
      */
-    break() {
-        if (this.isBroken) return;
-        this.isBroken = true;
-        this.speed = 0;
-        this.speedY = 0;
-
+    stopFlightIntervals() {
         if (this.gravityInterval) clearInterval(this.gravityInterval);
         if (this.rotationInterval) clearInterval(this.rotationInterval);
         if (this.moveInterval) clearInterval(this.moveInterval);
+    }
 
+    /**
+     * Plays the splash animation frame-by-frame and marks the bottle
+     * for removal once the sequence completes.
+     * @returns {void}
+     */
+    playSplashAnimation() {
         let frame = 0;
         this.splashInterval = setInterval(() => {
             if (frame >= this.IMAGES_SPLASH.length) {
@@ -118,5 +118,19 @@ export default class ThrowableObject extends MovableObject {
             this.loadImage(this.IMAGES_SPLASH[frame]);
             frame++;
         }, 40);
+    }
+
+    /**
+     * Stops all movement, clears flight intervals, and plays the splash animation.
+     * Sets {@link markedForRemoval} when the splash sequence ends.
+     * @returns {void}
+     */
+    break() {
+        if (this.isBroken) return;
+        this.isBroken = true;
+        this.speed = 0;
+        this.speedY = 0;
+        this.stopFlightIntervals();
+        this.playSplashAnimation();
     }
 }

@@ -35,12 +35,21 @@ export default class StatusBar extends DrawableObject {
         "img/7_statusbars/1_statusbar/3_statusbar_bottle/orange/100.png"
     ];
 
+    IMAGES_ENDBOSS = [
+        "img/7_statusbars/2_statusbar_endboss/blue/blue0.png",
+        "img/7_statusbars/2_statusbar_endboss/blue/blue20.png",
+        "img/7_statusbars/2_statusbar_endboss/blue/blue40.png",
+        "img/7_statusbars/2_statusbar_endboss/blue/blue60.png",
+        "img/7_statusbars/2_statusbar_endboss/blue/blue80.png",
+        "img/7_statusbars/2_statusbar_endboss/blue/blue100.png"
+    ];
+
     percentage = 100;
 
     /**
      * Preloads all three sprite sets, sets dimensions, and positions the bar
      * vertically based on its type.
-     * @param {'health'|'coins'|'bottles'} type - Which status bar to create.
+     * @param {string} type - Which status bar to create.
      */
     constructor(type) {
         super();
@@ -51,19 +60,23 @@ export default class StatusBar extends DrawableObject {
         this.loadImages(this.IMAGES_HEALTH);
         this.loadImages(this.IMAGES_COINS);
         this.loadImages(this.IMAGES_BOTTLES);
+        this.loadImages(this.IMAGES_ENDBOSS);
 
-        if (type === 'health') {
-            this.y = 0;
-            this.IMAGES = this.IMAGES_HEALTH;
-        } else if (type === 'coins') {
-            this.y = 50;
-            this.IMAGES = this.IMAGES_COINS;
-        } else if (type === 'bottles') {
-            this.y = 100;
-            this.IMAGES = this.IMAGES_BOTTLES;
-        }
-
+        this.initialize(type);
         this.setPercentage(0);
+    }
+
+    initialize(type) {
+        const config = {
+            health:  { y: 0,   images: this.IMAGES_HEALTH },
+            coins:   { y: 50,  images: this.IMAGES_COINS },
+            bottles: { y: 100, images: this.IMAGES_BOTTLES },
+            endboss: { y: 0,   images: this.IMAGES_ENDBOSS, x: 500 },
+        };
+        const { x, y, images } = config[type];
+        if (type === "endboss") this.x = x;
+        this.y = y;
+        this.IMAGES = images;
     }
 
     /**
@@ -78,22 +91,12 @@ export default class StatusBar extends DrawableObject {
     }
 
     /**
-     * Maps the current {@link percentage} value to a sprite array index (0–5).
+     * Maps the current percentage value to a sprite array index (0–5).
+     * Percentage steps are multiples of 20, so dividing by 20 and rounding up
+     * yields the correct index directly.
      * @returns {number} Index into the active IMAGES array.
      */
     resolveImageIndex() {
-        if (this.percentage === 100) {
-            return 5;
-        } else if (this.percentage > 79) {
-            return 4;
-        } else if (this.percentage > 59) {
-            return 3;
-        } else if (this.percentage > 39) {
-            return 2;
-        } else if (this.percentage > 19) {
-            return 1;
-        } else {
-            return 0;
-        }
+        return Math.ceil(this.percentage / 20);
     }
 }

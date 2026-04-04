@@ -1,5 +1,5 @@
-/** Milliseconds of inactivity before the character enters sleep state. */
-const SLEEP_THRESHOLD_MS = 15_000;
+/** Milliseconds of inactivity before the character enters the sleep state. */
+const SLEEP_THRESHOLD_MS = 5_000;
 
 let lastInteractionTime = Date.now();
 
@@ -16,6 +16,6 @@ export function resetIdleTimer() {
  * Returns true if the user has been inactive for at least {@link SLEEP_THRESHOLD_MS}.
  * @returns {boolean} True when the character should play its sleep animation.
  */
-export function isIdle() {
+export function isLongIdle() {
     return Date.now() - lastInteractionTime >= SLEEP_THRESHOLD_MS;
 }

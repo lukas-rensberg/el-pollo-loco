@@ -1,10 +1,11 @@
-const BG_MUSIC_VOLUME = 0.08;
+const BG_MUSIC_VOLUME = 0.05;
 const LOST_SOUND_VOLUME = 0.5;
 const WIN_SOUND_VOLUME = 0.5;
 const COIN_SOUND_VOLUME = 0.2;
 const BOTTLE_SOUND_VOLUME = 0.2;
 const THROW_SOUND_VOLUME = 0.3;
-const WALKING_SOUND_VOLUME = 0.3;
+const WALKING_SOUND_VOLUME = 1.0;
+const HURT_SOUND_VOLUME = 0.5;
 const ICON_MUTED = 'img/10_game_icons/mute.svg';
 const ICON_UNMUTED = 'img/10_game_icons/volume-on.svg';
 
@@ -15,6 +16,7 @@ export let coinSound = new Audio('audio/coin.mp3');
 export let bottleSound = new Audio('audio/bottle.mp3');
 export let throwSound = new Audio('audio/throw.mp3');
 export let walkingSound = new Audio('audio/pepe-walking.mp3');
+export let hurtSound = new Audio('audio/hurt.mp3');
 
 /** Whether all game audio is currently muted. Persisted to localStorage. */
 export let isMuted = false;
@@ -36,6 +38,8 @@ bottleSound.volume = BOTTLE_SOUND_VOLUME;
 throwSound.volume = THROW_SOUND_VOLUME;
 walkingSound.loop = true;
 walkingSound.volume = WALKING_SOUND_VOLUME;
+hurtSound.loop = false;
+hurtSound.volume = HURT_SOUND_VOLUME;
 
 /**
  * Swaps the mute button icon to reflect the current {@link isMuted} state.
@@ -62,12 +66,13 @@ export function applyMuteState() {
     bottleSound.muted = isMuted;
     throwSound.muted = isMuted;
     walkingSound.muted = isMuted;
+    hurtSound.muted = isMuted;
     updateMuteButtonIcon();
 }
 
 /**
  * Resets {@link backgroundMusic} to the beginning and starts playback.
- * Errors (e.g. autoplay policy) are silently ignored.
+ * Errors (e.g., autoplay policy) are silently ignored.
  * @returns {void}
  */
 export function playBackgroundMusic() {

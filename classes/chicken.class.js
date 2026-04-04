@@ -1,13 +1,10 @@
-import MovableObject from "./movable-object.class.js";
+import MovableObject, { GROUND_Y } from "./movable-object.class.js";
 
-/**
- * A standard enemy chicken that continuously walks left across the level.
- * Speed is randomised slightly on construction to avoid uniform movement.
- * Plays a death image when killed and is removed from the level after a delay.
- */
 export default class Chicken extends MovableObject {
-    y = 350
     height = 75
+    y = GROUND_Y - this.height
+    hitboxX = 0;
+    hitboxY = 0;
     width = 75
     IMAGES_WALKING = [
         "img/3_enemies_chicken/chicken_normal/1_walk/1_w.png",
@@ -15,13 +12,14 @@ export default class Chicken extends MovableObject {
         "img/3_enemies_chicken/chicken_normal/1_walk/3_w.png",
     ]
 
-    IMAGES_DEAD = [
+    DEAD_IMAGE = [
         "img/3_enemies_chicken/chicken_normal/2_dead/dead.png"
     ]
 
     /**
-     * Loads the default image, randomises starting position and speed,
+     * Loads the default image, randomizes starting position and speed,
      * then starts animation and movement loops.
+     * @constructor
      */
     constructor() {
         super().loadImage("img/3_enemies_chicken/chicken_normal/1_walk/1_w.png");
@@ -32,12 +30,11 @@ export default class Chicken extends MovableObject {
     /**
      * Preloads sprite sheets, sets a random starting x position within the level,
      * and starts the animation loop.
-     * Extracted so {@link SmallChicken} can call it after overriding images.
      * @returns {void}
      */
     initialize() {
         this.loadImages(this.IMAGES_WALKING);
-        this.loadImages(this.IMAGES_DEAD);
+        this.loadImages(this.DEAD_IMAGE);
 
         this.x = 300 + Math.random() * 2500;
 
@@ -53,7 +50,7 @@ export default class Chicken extends MovableObject {
     animate() {
         setInterval(() => {
             if (this.isDead()) {
-                this.playAnimation(this.IMAGES_DEAD);
+                this.playAnimation(this.DEAD_IMAGE);
             } else {
                 this.playAnimation(this.IMAGES_WALKING);
             }

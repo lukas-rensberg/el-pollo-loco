@@ -1,13 +1,9 @@
 import Chicken from "./chicken.class.js";
+import { GROUND_Y } from "./movable-object.class.js";
 
-/**
- * A smaller, faster variant of {@link Chicken}.
- * Overrides sprite paths and dimensions; behaviour is otherwise identical
- * to the base Chicken class.
- */
 export default class SmallChicken extends Chicken {
-    y = 375
     height = 50
+    y = GROUND_Y - this.height
     width = 50
     IMAGES_WALKING = [
         "img/3_enemies_chicken/chicken_small/1_walk/1_w.png",
@@ -15,7 +11,7 @@ export default class SmallChicken extends Chicken {
         "img/3_enemies_chicken/chicken_small/1_walk/3_w.png",
     ]
 
-    IMAGES_DEAD = [
+    DEAD_IMAGE = [
         "img/3_enemies_chicken/chicken_small/2_dead/dead.png"
     ]
 
@@ -34,13 +30,21 @@ export default class SmallChicken extends Chicken {
      * @returns {void}
      */
     animate() {
+        this.startAnimationLoop();
+        this.startMovementLoop();
+    }
+
+    startAnimationLoop() {
         setInterval(() => {
             if (this.isDead()) {
-                this.playAnimation(this.IMAGES_DEAD);
+                this.playAnimation(this.DEAD_IMAGE);
             } else {
                 this.playAnimation(this.IMAGES_WALKING);
             }
         }, 200);
+    }
+
+    startMovementLoop() {
         setInterval(() => {
             if (!this.isDead()) this.moveLeft();
         }, 1000 / 60);

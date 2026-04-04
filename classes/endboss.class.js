@@ -25,7 +25,11 @@ export default class Endboss extends MovableObject {
     height = 325
     width = 275
     y = 130
-    speed = 1
+    hitboxX = 60;
+    hitboxY = 20;
+    hitboxW = 280;
+    hitboxH = 280;
+    speed = 3
     hasBeenTriggered = false
 
     /**
@@ -36,6 +40,7 @@ export default class Endboss extends MovableObject {
     constructor(x) {
         super().loadImage(this.IMAGES_WALKING[0]);
         this.loadImages(this.IMAGES_WALKING);
+        this.loadImages(this.IMAGES_ALERT);
         this.x = x;
 
         this.animate();
@@ -43,23 +48,29 @@ export default class Endboss extends MovableObject {
 
     /**
      * Starts two independent intervals:
-     * 1. Sprite interval (200 ms) — cycles walking frames continuously.
+     * 1. Sprite interval (100 ms) — cycles walking frames continuously.
      * 2. Movement interval (60 FPS) — waits until the character is near the boss,
      *    then moves left every tick until defeated.
      * @returns {void}
      */
     animate() {
-        setInterval(() => {
-            this.playAnimation(this.IMAGES_WALKING);
-        }, 200);
+        this.startSpriteInterval();
+        this.startMovementInterval();
+    }
 
+    startSpriteInterval() {
+        setInterval(() => {
+            if (!this.hasBeenTriggered) return;
+            const alertDone = this.currentImage >= this.IMAGES_ALERT.length;
+            this.playAnimation(alertDone ? this.IMAGES_WALKING : this.IMAGES_ALERT);
+        }, 100);
+    }
+
+    startMovementInterval() {
         setInterval(() => {
             if (!this.world) return;
-            if (this.world.character.isNearBoss()) {
-                this.hasBeenTriggered = true;
-            }
-            if (!this.hasBeenTriggered) return;
-            this.moveLeft();
+            if (this.world.character.isNearBoss()) this.hasBeenTriggered = true;
+            if (this.hasBeenTriggered && this.currentImage >= this.IMAGES_ALERT.length) this.moveLeft();
         }, 1000 / 60);
     }
 }

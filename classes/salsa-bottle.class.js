@@ -1,10 +1,5 @@
 import ThrowableObject from "./throwable-object.class.js";
 
-/**
- * A salsa bottle used as a throwable weapon by the character.
- * Extends {@link ThrowableObject} without adding new behaviour; the class
- * exists as a named type so collision checks can identify thrown bottles.
- */
 export default class SalsaBottle extends ThrowableObject {
     /**
      * Delegates immediately to {@link ThrowableObject} with the given launch parameters.

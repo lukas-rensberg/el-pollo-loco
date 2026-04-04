@@ -14,12 +14,24 @@ const SAFE_ENEMY_MAX_X = BOSS_SECTION_START_X - 120;
 const BOSS_SPAWN_X = LEVEL_END_X + 400;
 const BOTTLE_GROUND_Y = 350;
 
+/**
+ * Creates an enemy of the given type and clamps its x position to a safe zone.
+ * @param {Function} EnemyType - Constructor for the enemy class.
+ * @param {number} x - Desired x position (clamped to {@link SAFE_ENEMY_MAX_X}).
+ * @returns {MovableObject}
+ */
 function createEnemyAt(EnemyType, x) {
     const enemy = new EnemyType();
     enemy.x = Math.min(x, SAFE_ENEMY_MAX_X);
     return enemy;
 }
 
+/**
+ * Creates a coin at the given position.
+ * @param {number} x - Horizontal position.
+ * @param {number} [y=350] - Vertical position.
+ * @returns {Coins}
+ */
 function createCoinAt(x, y = 350) {
     const coin = new Coins();
     coin.x = x;
@@ -28,20 +40,21 @@ function createCoinAt(x, y = 350) {
 }
 
 /**
- * Creates and returns all the game elements for Level 1, including
- * Enemies: An "Endboss", several Chickens, and SmallChickens.
- * Clouds: A series of clouds for the sky.
- * BackgroundObjects: Multiple layers for a parallax scrolling effect.
- * Bottles: Collectible bottle items.
- * Coins: Collectible coin items.
- *
- * @returns {{enemies: Array, clouds: Array, backgroundObjects: Array, coins: Array, bottles: Array, levelEndX: number}} An object containing arrays of all the defined game elements.
+ * Creates and positions the endboss at the end of the level.
+ * @returns {Endboss}
  */
-export default function createLevel1Objects() {
+function createBoss() {
     const boss = new Endboss();
     boss.x = BOSS_SPAWN_X;
+    return boss;
+}
 
-    let enemies = [
+/**
+ * Creates all enemies for level 1, including regular chickens and the endboss.
+ * @returns {MovableObject[]}
+ */
+function createEnemies() {
+    return [
         createEnemyAt(Chicken, 500),
         createEnemyAt(Chicken, 900),
         createEnemyAt(SmallChicken, 1200),
@@ -53,29 +66,48 @@ export default function createLevel1Objects() {
         createEnemyAt(SmallChicken, 3150),
         createEnemyAt(Chicken, 3450),
         createEnemyAt(SmallChicken, 3720),
-        boss,
+        createBoss(),
     ];
+}
 
-    let clouds = [];
+/**
+ * Creates the cloud objects spread across the level width.
+ * @returns {Cloud[]}
+ */
+function createClouds() {
+    const clouds = [];
     for (let i = 0; i < BACKGROUND_TILE_COUNT + 2; i++) {
         const cloudImage = i % 2 === 0
             ? "img/5_background/layers/4_clouds/1.png"
             : "img/5_background/layers/4_clouds/2.png";
         clouds.push(new Cloud(cloudImage, i * 650));
     }
+    return clouds;
+}
 
-    let backgroundObjects = [];
+/**
+ * Creates all parallax background layer objects for level 1.
+ * @returns {BackgroundObject[]}
+ */
+function createBackgrounds() {
+    const backgroundObjects = [];
     for (let i = 0; i < BACKGROUND_TILE_COUNT; i++) {
         const variant = i % 2 === 0 ? "1" : "2";
         const tileX = TILE_WIDTH * i;
-
         backgroundObjects.push(new BackgroundObject("img/5_background/layers/air.png", tileX));
         backgroundObjects.push(new BackgroundObject(`img/5_background/layers/3_third_layer/${variant}.png`, tileX));
         backgroundObjects.push(new BackgroundObject(`img/5_background/layers/2_second_layer/${variant}.png`, tileX));
         backgroundObjects.push(new BackgroundObject(`img/5_background/layers/1_first_layer/${variant}.png`, tileX));
     }
+    return backgroundObjects;
+}
 
-    let coins = [
+/**
+ * Creates all collectible coin objects for level 1.
+ * @returns {Coins[]}
+ */
+function createCoins() {
+    return [
         createCoinAt(260, 280),
         createCoinAt(620, 230),
         createCoinAt(980, 260),
@@ -87,8 +119,14 @@ export default function createLevel1Objects() {
         createCoinAt(3380, 230),
         createCoinAt(3780, 200),
     ];
+}
 
-    let bottles = [
+/**
+ * Creates all collectible ground bottle objects for level 1.
+ * @returns {BottleGround[]}
+ */
+function createBottles() {
+    return [
         new BottleGround(400, BOTTLE_GROUND_Y),
         new BottleGround(800, BOTTLE_GROUND_Y),
         new BottleGround(1200, BOTTLE_GROUND_Y),
@@ -99,6 +137,19 @@ export default function createLevel1Objects() {
         new BottleGround(3200, BOTTLE_GROUND_Y),
         new BottleGround(3600, BOTTLE_GROUND_Y),
     ];
+}
 
-    return { enemies, clouds, backgroundObjects, coins, bottles, levelEndX: LEVEL_END_X };
+/**
+ * Creates and returns all game elements for Level 1.
+ * @returns {{enemies: Array, clouds: Array, backgroundObjects: Array, coins: Array, bottles: Array, levelEndX: number}}
+ */
+export default function createLevel1Objects() {
+    return {
+        enemies: createEnemies(),
+        clouds: createClouds(),
+        backgroundObjects: createBackgrounds(),
+        coins: createCoins(),
+        bottles: createBottles(),
+        levelEndX: LEVEL_END_X
+    };
 }

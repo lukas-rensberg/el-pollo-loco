@@ -2,94 +2,81 @@
 <html lang="de" translate="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <link rel="shortcut icon" href="img/4_enemie_boss_chicken/1_walk/G2.png" type="image/png">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="description" content="El Pollo Loco – ein 2D-Jump-and-Run-Spiel im Browser">
+    <title>El Pollo Loco</title>
+    <link rel="icon" href="img/4_enemie_boss_chicken/1_walk/G2.png" type="image/png">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body class="game-start-screen">
-    <h1>El pollo loco</h1>
+<h1>El pollo loco</h1>
 
-    <div id="rotate-warning" aria-live="polite">Bitte Gerät drehen</div>
+<div id="rotate-warning" aria-live="polite">Bitte Gerät drehen</div>
 
-    <img src="img/5_background/screen-bg.png" id="backgroundImage" alt="fullscreen background image showing a desert">
-    <div id="gameContainer">
-        <canvas width="720" height="480" id="gameCanvas">
-            Your Browser does not support the HTML5 canvas tag.
-        </canvas>
+<img src="img/5_background/screen-bg.png" id="backgroundImage" alt="fullscreen background image showing a desert">
+<div id="gameContainer">
+    <canvas width="720" height="480" id="gameCanvas">
+        Your Browser does not support the HTML5 canvas tag.
+    </canvas>
 
-        <div id="uiButtons">
-            <button class="uiIconButton" id="controls-info-btn" onclick="openDialog('controlsDialog')" aria-label="Tasteninfo" title="Tasteninfo">
-                <img src="img/10_game_icons/keys.svg" alt="Tasteninfo">
-            </button>
-            <button class="uiIconButton" onclick="openDialog('imprintDialog')" aria-label="Impressum" title="Impressum">
-                <img src="img/10_game_icons/info.svg" alt="Impressum">
-            </button>
-            <button class="uiIconButton" id="fullscreen-btn" aria-label="Vollbild umschalten" title="Vollbild">
-                <img src="img/10_game_icons/play.svg" alt="Vollbild">
-            </button>
-        </div>
-
-        <div id="startScreen">
-            <img src="img/9_intro_outro_screens/start/startscreen_1.png" alt="Start Screen showing a preview of the game with background, enemies and player">
-            <button id="startButton" onclick="startGame()" aria-label="Spiel starten" title="Start Game">
-                <img src="img/10_game_icons/play.svg" alt="Starten">
-            </button>
-        </div>
-
-        <div id="gameOverScreen" class="d-none">
-            <img src="img/9_intro_outro_screens/game_over/you lost.png" alt="Game Over">
-            <div id="gameOverActions" class="endscreen-actions">
-                <button id="restartButton" onclick="restartGame()">Restart</button>
-                <button id="backToMenuButton" onclick="backToMainMenu()">Back to Main Menu</button>
-            </div>
-        </div>
-
-        <div id="win-screen" class="d-none">
-            <img id="winScreenImage" src="img/You won, you lost/You Win A.png" alt="You won">
-            <button id="backToStartButton" onclick="backToMainMenu()">Back to Main Menu</button>
-        </div>
-
-        <button id="muteButton" onclick="toggleMute(event)" aria-label="Ton umschalten" title="Ton an/aus">
-            <img id="muteIcon" src="img/10_game_icons/volume-on.svg" alt="Ton an">
+    <div id="uiButtons">
+        <button class="uiIconButton" id="controls-info-btn" onclick="openDialog('controlsDialog')"
+                aria-label="Tasteninfo" title="Tasteninfo">
+            <img src="img/10_game_icons/keys.svg" alt="Tasteninfo">
         </button>
-
-        <div id="mobile-controls" class="d-none" aria-label="Mobile Steuerung">
-            <button class="touchButton touchButton--round" id="btn-left" aria-label="Nach links">&#9664;</button>
-            <button class="touchButton touchButton--round" id="btn-right" aria-label="Nach rechts">&#9654;</button>
-            <button class="touchButton" id="btn-jump" aria-label="Springen">Jump</button>
-            <button class="touchButton" id="btn-throw" aria-label="Werfen">Throw</button>
-        </div>
-
-        <dialog id="controlsDialog" class="gameDialog">
-            <h2>Tasteninfo</h2>
-            <p>Links/Rechts: Pfeiltasten</p>
-            <p>Springen: Leertaste</p>
-            <p>Werfen: D</p>
-            <button class="dialogCloseButton" onclick="closeDialog('controlsDialog')">Schliessen</button>
-        </dialog>
-
-        <dialog id="imprintDialog" class="gameDialog">
-            <h2>Impressum</h2>
-            <p>Angaben gemäß § 5 DDG</p>
-            <p>Lukas Rensberg<br>
-                <br>
-                Bahnhofstraße 10<br>
-                37124 Rosdorf <br>
-            </p>
-
-            <p><strong>Kontakt:</strong> <br>
-                Telefon: 015563-543485<br>
-                E-Mail: <a href="mailto:info@lukas-rensberg.de">info@lukas-rensberg.de</a></p>
-
-            <p>Erstellt mit <a href="https://impressum-generator.de" rel="dofollow">Impressum-Generator.de</a>, dem Tool für Impressum und <a href="https://impressum-generator.de/datenschutz-generator" rel="dofollow">Datenschutz-Erklärung</a>. Nach einer Vorlage der <a href="https://www.kanzlei-hasselbach.de/" rel="dofollow">Kanzlei Hasselbach</a>.</p>
-            <button class="dialogCloseButton" onclick="closeDialog('imprintDialog')">Schliessen</button>
-        </dialog>
+        <button class="uiIconButton" id="fullscreen-btn" aria-label="Vollbild umschalten" title="Vollbild">
+            <img src="img/10_game_icons/fullscreen.svg" alt="Vollbild">
+        </button>
     </div>
 
-    <script type="module" src="js/game.js"></script>
+    <div id="startScreen">
+        <img src="img/9_intro_outro_screens/start/startscreen_1.png"
+             alt="Start Screen showing a preview of the game with background, enemies and player">
+        <button id="startButton" onclick="startGame()" aria-label="Spiel starten" title="Start Game">
+            <img src="img/10_game_icons/play.svg" alt="Starten">
+        </button>
+        <footer>
+            <a href="impressum.html">Impressum</a>
+        </footer>
+    </div>
+
+    <div id="gameOverScreen" class="d-none">
+        <img src="img/9_intro_outro_screens/game_over/you lost.png" alt="Game Over">
+        <div id="gameOverActions" class="endscreen-actions">
+            <button id="restartButton" onclick="restartGame()">Restart</button>
+            <button id="backToMenuButton" onclick="backToMainMenu()">Back to Main Menu</button>
+        </div>
+    </div>
+
+    <div id="win-screen" class="d-none">
+        <img id="winScreenImage" src="img/You won, you lost/You Win A.png" alt="You won">
+        <div id="winScreenActions" class="endscreen-actions">
+            <button id="playAgainButton" onclick="restartGame()">Play Again</button>
+            <button id="backToStartButton" onclick="backToMainMenu()">Back to Main Menu</button>
+        </div>
+    </div>
+
+    <button id="muteButton" onclick="toggleMute(event)" aria-label="Ton umschalten" title="Ton an/aus">
+        <img id="muteIcon" src="img/10_game_icons/volume-on.svg" alt="Ton an">
+    </button>
+
+    <div id="mobile-controls" class="d-none" aria-label="Mobile Steuerung">
+        <button class="touchButton touchButton--round" id="btn-left" aria-label="Nach links">&#9664;</button>
+        <button class="touchButton touchButton--round" id="btn-right" aria-label="Nach rechts">&#9654;</button>
+        <button class="touchButton" id="btn-jump" aria-label="Springen">Jump</button>
+        <button class="touchButton" id="btn-throw" aria-label="Werfen">Throw</button>
+    </div>
+
+    <dialog id="controlsDialog" class="gameDialog">
+        <h2>Tasteninfo</h2>
+        <p>Links/Rechts: Pfeiltasten</p>
+        <p>Springen: Leertaste</p>
+        <p>Werfen: D</p>
+        <button class="dialogCloseButton" onclick="closeDialog('controlsDialog')">Schliessen</button>
+    </dialog>
+</div>
+
+<script type="module" src="js/game.js"></script>
 </body>
 </html>

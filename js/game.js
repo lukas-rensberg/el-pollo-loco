@@ -3,13 +3,13 @@ import World from "../classes/world.class.js";
 import Keyboard from "../classes/keyboard.class.js";
 import Level from "../classes/level.class.js";
 import {
-    backgroundMusic, lostSound, winSound, coinSound, bottleSound, throwSound, walkingSound,
+    backgroundMusic, lostSound, winSound, coinSound, bottleSound, throwSound, walkingSound, hurtSound,
     isMuted, setMuted, applyMuteState, playBackgroundMusic
 } from "./audio.js";
 import {
     toggleFullscreen, maybeRequestFullscreenFromGesture, checkOrientation,
     refreshResponsiveLayout, canStartGameInCurrentOrientation,
-    initTouchControls, tryEnterFullscreenInLandscape
+    initTouchControls
 } from "./input.js";
 import { resetIdleTimer } from "./idle-timer.js";
 
@@ -17,103 +17,131 @@ let canvas;
 let world;
 let keyboard = new Keyboard();
 let hasGameStarted = false;
-let lastWinScreenImageIndex = -1;
 
-const WIN_SCREEN_IMAGES = [
-    'img/You won, you lost/You Win A.png',
-    'img/You won, you lost/You win B.png',
-    'img/You won, you lost/You won A.png',
-    'img/You won, you lost/You Won B.png'
-];
-
-function toggleMute(event) {
-    if (event) {
-        event.preventDefault();
-        event.currentTarget.blur();
-    }
-
-    setMuted(!isMuted);
+/**
+ * Saves the current mute state to localStorage, ignoring storage errors.
+ * @returns {void}
+ */
+function persistMuteState() {
     try {
         localStorage.setItem('mute', String(isMuted));
     } catch (_) {
         // Ignore storage errors (e.g. private mode or blocked storage).
     }
-    applyMuteState();
+}
 
+/**
+ * Resumes background music if a game is running and audio is unmuted.
+ * @returns {void}
+ */
+function resumeMusicIfNeeded() {
     if (hasGameStarted && !isMuted && backgroundMusic.paused) {
         backgroundMusic.play().catch(() => {});
     }
 }
 
+/**
+ * Toggles audio mute state, persists it, and resumes music if applicable.
+ * @param {Event} [event] - Optional click event; blur is called to clear focus ring.
+ * @returns {void}
+ */
+function toggleMute(event) {
+    if (event) {
+        event.preventDefault();
+        event.currentTarget.blur();
+    }
+    setMuted(!isMuted);
+    persistMuteState();
+    applyMuteState();
+    resumeMusicIfNeeded();
+}
+
+/**
+ * Opens the dialog with the given id if it is not already open.
+ * @param {string} id - The DOM id of the dialog element.
+ * @returns {void}
+ */
 function openDialog(id) {
     const dialog = document.getElementById(id);
     if (!dialog || dialog.open) return;
     dialog.showModal();
 }
 
+/**
+ * Closes the dialog with the given id if it is currently open.
+ * @param {string} id - The DOM id of the dialog element.
+ * @returns {void}
+ */
 function closeDialog(id) {
     const dialog = document.getElementById(id);
     if (!dialog || !dialog.open) return;
     dialog.close();
 }
 
+/**
+ * Closes all currently open dialog elements on the page.
+ * @returns {void}
+ */
 function closeAllDialogs() {
     document.querySelectorAll('dialog[open]').forEach((dialog) => {
         dialog.close();
     });
 }
 
-function setRandomWinScreenImage() {
+/**
+ * Sets the win-screen image to the default winning image.
+ * @returns {void}
+ */
+function setWinScreenImage() {
     const winScreenImage = document.getElementById('winScreenImage');
-    if (!winScreenImage || WIN_SCREEN_IMAGES.length === 0) return;
-
-    let randomIndex = Math.floor(Math.random() * WIN_SCREEN_IMAGES.length);
-    if (WIN_SCREEN_IMAGES.length > 1) {
-        while (randomIndex === lastWinScreenImageIndex) {
-            randomIndex = Math.floor(Math.random() * WIN_SCREEN_IMAGES.length);
-        }
-    }
-
-    lastWinScreenImageIndex = randomIndex;
-    winScreenImage.src = WIN_SCREEN_IMAGES[randomIndex];
+    winScreenImage.src = 'img/You won, you lost/You Won B.png';
 }
 
+/**
+ * Observes the win-screen element for class changes and refreshes the image
+ * each time the screen becomes visible.
+ * @returns {void}
+ */
 function initWinScreenImageRandomizer() {
     const winScreen = document.getElementById('win-screen');
     if (!winScreen) return;
-
-    const winScreenClassObserver = new MutationObserver(() => {
-        if (!winScreen.classList.contains('d-none')) {
-            setRandomWinScreenImage();
-        }
+    const observer = new MutationObserver(() => {
+        if (!winScreen.classList.contains('d-none')) setWinScreenImage();
     });
-
-    winScreenClassObserver.observe(winScreen, {
-        attributes: true,
-        attributeFilter: ['class']
-    });
+    observer.observe(winScreen, { attributes: true, attributeFilter: ['class'] });
 }
 
-function showWinScreen() {
-    stopActiveGameSession();
+/**
+ * Pauses and resets all sounds relevant to the win transition.
+ * @returns {void}
+ */
+function stopAllSoundsOnWin() {
     backgroundMusic.pause();
     backgroundMusic.currentTime = 0;
     walkingSound.pause();
     walkingSound.currentTime = 0;
     lostSound.pause();
     lostSound.currentTime = 0;
+}
+
+/**
+ * Stops the session, plays the win sound, and shows the win screen.
+ * @returns {void}
+ */
+function showWinScreen() {
+    stopActiveGameSession();
+    stopAllSoundsOnWin();
     winSound.currentTime = 0;
     winSound.play().catch(() => {});
     document.getElementById('gameOverScreen').classList.add('d-none');
     document.getElementById('win-screen').classList.remove('d-none');
 }
 
-function showGameOverScreen() {
-    const gameOverScreen = document.getElementById('gameOverScreen');
-    if (!gameOverScreen || !gameOverScreen.classList.contains('d-none')) return;
-
-    stopActiveGameSession();
-    document.getElementById('win-screen').classList.add('d-none');
+/**
+ * Pauses and resets all sounds relevant to the game-over transition.
+ * @returns {void}
+ */
+function stopAllSoundsOnGameOver() {
     backgroundMusic.pause();
     backgroundMusic.currentTime = 0;
     walkingSound.pause();
@@ -123,9 +151,25 @@ function showGameOverScreen() {
     lostSound.pause();
     lostSound.currentTime = 0;
     lostSound.play().catch(() => {});
+}
+
+/**
+ * Stops the session, plays the lose sound, and shows the game-over screen.
+ * @returns {void}
+ */
+function showGameOverScreen() {
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    if (!gameOverScreen || !gameOverScreen.classList.contains('d-none')) return;
+    stopActiveGameSession();
+    document.getElementById('win-screen').classList.add('d-none');
+    stopAllSoundsOnGameOver();
     gameOverScreen.classList.remove('d-none');
 }
 
+/**
+ * Stops the active world, cancels its animation frame, and clears all intervals.
+ * @returns {void}
+ */
 function stopActiveGameSession() {
     if (world) {
         world.stopped = true;
@@ -134,13 +178,15 @@ function stopActiveGameSession() {
             world.animationFrameId = null;
         }
     }
-
     walkingSound.pause();
     walkingSound.currentTime = 0;
-
     for (let i = 1; i < 9999; i++) window.clearInterval(i);
 }
 
+/**
+ * Starts the game if the current orientation allows it.
+ * @returns {void}
+ */
 function startGame() {
     if (!canStartGameInCurrentOrientation()) return;
     maybeRequestFullscreenFromGesture();
@@ -148,42 +194,62 @@ function startGame() {
     prepareGameStart();
 }
 
+/**
+ * Restarts the game by stopping the current session and starting a fresh one.
+ * @returns {void}
+ */
 function restartGame() {
     if (!canStartGameInCurrentOrientation()) return;
     maybeRequestFullscreenFromGesture();
     stopActiveGameSession();
     closeAllDialogs();
     prepareGameStart();
-    generateWorld();
 }
 
-function prepareGameStart() {
+/**
+ * Hides all game overlay screens and removes the start-screen body class.
+ * @returns {void}
+ */
+function hideGameScreens() {
     document.body.classList.remove('game-start-screen');
     document.getElementById('startScreen').classList.add('d-none');
     document.getElementById('gameOverScreen').classList.add('d-none');
     document.getElementById('win-screen').classList.add('d-none');
+}
+
+/**
+ * Hides overlays, resets sounds and keyboard, then starts the game world.
+ * @returns {void}
+ */
+function prepareGameStart() {
+    hideGameScreens();
     lostSound.pause();
     lostSound.currentTime = 0;
     winSound.pause();
     winSound.currentTime = 0;
-    setRandomWinScreenImage();
+    setWinScreenImage();
     keyboard = new Keyboard();
     hasGameStarted = true;
     playBackgroundMusic();
     generateWorld();
 }
 
-function backToMainMenu() {
-    stopActiveGameSession();
-    closeAllDialogs();
-
+/**
+ * Shows the start screen and hides all game-related overlay screens.
+ * @returns {void}
+ */
+function showMainMenuScreens() {
     document.body.classList.add('game-start-screen');
     document.getElementById('startScreen').classList.remove('d-none');
     document.getElementById('gameOverScreen').classList.add('d-none');
     document.getElementById('win-screen').classList.add('d-none');
+}
 
-    keyboard = new Keyboard();
-    hasGameStarted = false;
+/**
+ * Pauses and resets all sounds for the main-menu transition.
+ * @returns {void}
+ */
+function stopAllSoundsOnMenu() {
     backgroundMusic.pause();
     backgroundMusic.currentTime = 0;
     lostSound.pause();
@@ -192,10 +258,26 @@ function backToMainMenu() {
     winSound.currentTime = 0;
 }
 
-function generateWorld() {
-    canvas = document.getElementById("gameCanvas");
-    let levelData = createLevel1Objects();
-    let activeLevel = new Level(
+/**
+ * Stops the active game session and returns the player to the main menu.
+ * @returns {void}
+ */
+function backToMainMenu() {
+    stopActiveGameSession();
+    closeAllDialogs();
+    showMainMenuScreens();
+    keyboard = new Keyboard();
+    hasGameStarted = false;
+    stopAllSoundsOnMenu();
+}
+
+/**
+ * Creates a {@link Level} instance from the Level 1 object factory.
+ * @returns {Level}
+ */
+function createActiveLevel() {
+    const levelData = createLevel1Objects();
+    return new Level(
         levelData.enemies,
         levelData.clouds,
         levelData.backgroundObjects,
@@ -203,12 +285,21 @@ function generateWorld() {
         levelData.levelEndX,
         levelData.bottles
     );
-    world = new World(canvas, keyboard, activeLevel);
+}
+
+/**
+ * Creates the canvas reference, builds the active level, and wires all world sounds.
+ * @returns {void}
+ */
+function generateWorld() {
+    canvas = document.getElementById("gameCanvas");
+    world = new World(canvas, keyboard, createActiveLevel());
     world.sounds = {
         coin: coinSound,
         bottle: bottleSound,
         throw: throwSound,
-        walking: walkingSound
+        walking: walkingSound,
+        hurt: hurtSound
     };
 }
 
@@ -275,7 +366,7 @@ initWinScreenImageRandomizer();
 checkOrientation();
 refreshResponsiveLayout();
 applyMuteState();
-setRandomWinScreenImage();
+setWinScreenImage();
 
 ['click', 'touchstart', 'mousemove'].forEach(type =>
     document.addEventListener(type, resetIdleTimer, { passive: true })
@@ -286,5 +377,4 @@ window.addEventListener('resize', checkOrientation);
 window.addEventListener('orientationchange', () => setTimeout(() => {
     refreshResponsiveLayout();
     checkOrientation();
-    tryEnterFullscreenInLandscape();
 }, 50));

@@ -1,6 +1,6 @@
 import MovableObject from "./movable-object.class.js";
 import SalsaBottle from "./salsa-bottle.class.js";
-import { isIdle } from '../js/idle-timer.js';
+import { isLongIdle } from '../js/idle-timer.js';
 
 /**
  * The player-controlled character Pepe.
@@ -12,6 +12,10 @@ export default class Character extends MovableObject {
     y = 130
     width = 170;
     height = 300;
+    hitboxX = 40;
+    hitboxY = 100;
+    hitboxW = 90;
+    hitboxH = 180;
     speed = 10;
     health = 100;
     bottleCount = 0;
@@ -51,6 +55,19 @@ export default class Character extends MovableObject {
         "img/2_character_pepe/5_dead/D-56.png",
         "img/2_character_pepe/5_dead/D-57.png"
     ]
+    /** Short-idle / breathing frames, played while standing still. */
+    IMAGES_IDLE_SHORT = [
+        "img/2_character_pepe/1_idle/idle/I-1.png",
+        "img/2_character_pepe/1_idle/idle/I-2.png",
+        "img/2_character_pepe/1_idle/idle/I-3.png",
+        "img/2_character_pepe/1_idle/idle/I-4.png",
+        "img/2_character_pepe/1_idle/idle/I-5.png",
+        "img/2_character_pepe/1_idle/idle/I-6.png",
+        "img/2_character_pepe/1_idle/idle/I-7.png",
+        "img/2_character_pepe/1_idle/idle/I-8.png",
+        "img/2_character_pepe/1_idle/idle/I-9.png",
+        "img/2_character_pepe/1_idle/idle/I-10.png",
+    ]
     /** Long-idle / sleep frames, played after 15 s of inactivity. */
     IMAGES_IDLE = [
         "img/2_character_pepe/1_idle/long_idle/I-11.png",
@@ -65,12 +82,24 @@ export default class Character extends MovableObject {
         "img/2_character_pepe/1_idle/long_idle/I-20.png",
     ]
     world;
+    lastFrameAt = 0;
+
+    /** Frame duration in ms per animation state. */
+    FRAME_MS = {
+        jumping:  80,
+        hurt:    100,
+        walking: 110,
+        sleep:   200,
+        idle:    150,
+    };
 
     /**
      * Loads all sprite sheets and starts the physics and animation loops.
+     * @constructor
      */
     constructor() {
         super().loadImage("img/2_character_pepe/1_idle/idle/I-1.png");
+        this.loadImages(this.IMAGES_IDLE_SHORT);
         this.loadImages(this.IMAGES_IDLE);
         this.loadImages(this.IMAGES_WALKING);
         this.loadImages(this.IMAGES_JUMPING);
@@ -82,77 +111,139 @@ export default class Character extends MovableObject {
     }
 
     /**
-     * Starts two independent interval loops:
-     * 1. Animation interval (50 ms) — selects the active sprite strip based on
-     *    movement and health state; falls back to the sleep animation after
-     *    15 seconds of user inactivity ({@link isIdle}).
-     * 2. Game-logic interval (60 FPS) — processes movement input, jumping, throwing,
-     *    and updates the camera offset.
+     * Starts the animation and game-logic loops.
      * @returns {void}
      */
     animate() {
+        this.startAnimationLoop();
+        this.startGameLogicLoop();
+    }
+
+    /**
+     * Starts the 50 ms sprite-selection interval.
+     * @returns {void}
+     */
+    startAnimationLoop() {
+        setInterval(() => this.updateAnimationFrame(), 50);
+    }
+
+    /**
+     * Starts the 60 FPS game-logic interval for movement, throwing, and camera.
+     * @returns {void}
+     */
+    startGameLogicLoop() {
         setInterval(() => {
-            if (this.isAboveGround()) {
-                this.playAnimation(this.IMAGES_JUMPING);
-            } else if (this.isHurt()) {
-                this.playAnimation(this.IMAGES_HURT);
-            } else if (this.world.keyboard.RIGHT_ARROW || this.world.keyboard.LEFT_ARROW) {
-                this.playAnimation(this.IMAGES_WALKING);
-            } else if (!this.isDead() && isIdle()) {
-                this.playAnimation(this.IMAGES_IDLE);
-            } else {
-                this.loadImage("img/2_character_pepe/1_idle/idle/I-1.png");
-            }
-        }, 50);
-
-        setInterval(() => {
-            if (this.isDead()) {
-                this.playAnimation(this.IMAGES_DEAD);
-                this.world.showGameOverScreen();
-            } else if (this.world.keyboard.SPACE && !this.isAboveGround()) {
-                this.jump();
-            } else if (this.world.keyboard.RIGHT_ARROW && this.x < this.world.activeLevel.level_end_x) {
-                this.otherDirection = false;
-                this.moveRight();
-            } else if (this.world.keyboard.LEFT_ARROW && this.x > 60) {
-                this.otherDirection = true;
-                this.moveLeft();
-            }
-
-            let isThrowPressed = this.world.keyboard.KEY_D;
-            if (!isThrowPressed) {
-                this.throwKeyPressed = false;
-            } else if (!this.throwKeyPressed && this.bottleCount > 0 && !this.otherDirection) {
-                this.throw();
-                this.throwKeyPressed = true;
-            } else if (this.otherDirection) {
-                this.bottleCount -= 1;
-            }
-
-            this.world.camera_x = -this.x + 60;
+            this.handleMovement();
+            this.handleThrow();
         }, 1000 / 60);
     }
 
     /**
+     * Selects the active sprite strip based on current movement and health state.
+     * Falls back to the sleep animation after 15 s of inactivity.
+     * @returns {void}
+     */
+    updateAnimationFrame() {
+        const now = Date.now();
+        const ms = this.getCurrentFrameMs();
+        if (now - this.lastFrameAt < ms) return;
+        this.lastFrameAt = now;
+
+        if (this.isAboveGround()) {
+            this.playAnimation(this.IMAGES_JUMPING);
+        } else if (this.isHurt()) {
+            this.playAnimation(this.IMAGES_HURT);
+        } else if (this.world.keyboard.RIGHT_ARROW || this.world.keyboard.LEFT_ARROW) {
+            this.playAnimation(this.IMAGES_WALKING);
+        } else if (!this.isDead() && isLongIdle()) {
+            this.playAnimation(this.IMAGES_IDLE);
+        } else {
+            this.playAnimation(this.IMAGES_IDLE_SHORT);
+        }
+    }
+
+    getCurrentFrameMs() {
+        if (this.isAboveGround())  return this.FRAME_MS.jumping;
+        if (this.isHurt())         return this.FRAME_MS.hurt;
+        if (this.world.keyboard.RIGHT_ARROW || this.world.keyboard.LEFT_ARROW) return this.FRAME_MS.walking;
+        if (!this.isDead() && isLongIdle()) return this.FRAME_MS.sleep;
+        return this.FRAME_MS.idle;
+    }
+
+    /**
+     * Processes movement input and triggers game-over when the character dies.
+     * Updates the camera offset after each tick.
+     * @returns {void}
+     */
+    handleMovement() {
+        if (this.isDead()) {
+            this.playAnimation(this.IMAGES_DEAD);
+            this.world.showGameOverScreen();
+            return;
+        }
+        if (this.world.keyboard.SPACE && !this.isAboveGround()) {
+            this.jump();
+        }
+        if (this.world.keyboard.RIGHT_ARROW && this.x < this.world.activeLevel.level_end_x) {
+            this.otherDirection = false;
+            this.moveRight();
+        } else if (this.world.keyboard.LEFT_ARROW && this.x > 60) {
+            this.otherDirection = true;
+            this.moveLeft();
+        }
+        this.world.camera_x = -this.x + 60;
+    }
+
+    /**
+     * Handles throw-key state: resets the pressed flag on release, fires a bottle
+     * on a fresh press with inventory available, or discards a bottle thrown backward.
+     * @returns {void}
+     */
+    handleThrow() {
+        const isThrowPressed = this.world.keyboard.KEY_D;
+        if (!isThrowPressed) {
+            this.throwKeyPressed = false;
+            return;
+        }
+        if (this.throwKeyPressed || this.bottleCount <= 0) return;
+        this.throwKeyPressed = true;
+        if (this.otherDirection) {
+            this.bottleCount--;
+            this.world.statusBarBottles.setPercentage(this.bottleCount * 20);
+        } else {
+            this.throw();
+        }
+    }
+
+    /**
+     * Computes the launch position for a thrown bottle based on a facing direction.
+     * @param {boolean} throwToRight - True when throwing right.
+     * @returns {{x: number, y: number}}
+     */
+    calculateThrowPosition(throwToRight) {
+        return {
+            x: throwToRight ? this.x + this.width + 30 : this.x - 60,
+            y: this.y + 100
+        };
+    }
+
+    /**
      * Creates and launches a {@link SalsaBottle} from the character's current position.
-     * Enforces {@link THROW_COOLDOWN} between consecutive throws and deducts one bottle
-     * from the inventory.
+     * Enforces {@link THROW_COOLDOWN} between consecutive throws and deducts one bottle.
      * @returns {void}
      */
     throw() {
-        let now = new Date().getTime();
+        const now = new Date().getTime();
         if (now - this.lastThrowTime < this.THROW_COOLDOWN) return;
         this.lastThrowTime = now;
 
-        let throwToRight = !this.otherDirection;
-        let throwX = throwToRight ? this.x + this.width + 30 : this.x - 60;
-        let throwY = this.y + 100;
-
-        let bottle = new SalsaBottle(throwX, throwY, throwToRight);
+        const throwToRight = !this.otherDirection;
+        const pos = this.calculateThrowPosition(throwToRight);
+        const bottle = new SalsaBottle(pos.x, pos.y, throwToRight);
         this.world.activeLevel.throwableBottles.push(bottle);
         this.bottleCount--;
         this.world.statusBarBottles.setPercentage(this.bottleCount * 20);
-        this.playSound("throw");
+        this.world.playSound("throw");
     }
 
     /**

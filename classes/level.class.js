@@ -1,7 +1,3 @@
-/**
- * Data container for a single game level.
- * Holds all entity arrays consumed by {@link World} at runtime.
- */
 export default class Level {
     enemies = [];
     clouds = [];

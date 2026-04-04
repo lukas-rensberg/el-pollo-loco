@@ -4,7 +4,7 @@
 
 <div align="center">
 
-![El Pollo Loco Banner](assets/img/9_intro_outro_screens/start/startscreen_1.png)
+![El Pollo Loco Banner](img/9_intro_outro_screens/start/startscreen_1.png)
 
 Ein actionreiches Jump-and-Run Spiel, entwickelt mit purem JavaScript, HTML5 Canvas und CSS3.
 

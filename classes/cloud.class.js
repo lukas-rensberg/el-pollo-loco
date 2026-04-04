@@ -1,9 +1,5 @@
 import MovableObject from "./movable-object.class.js";
 
-/**
- * A decorative cloud sprite that continuously drifts leftward in the background.
- * Provides depth to the parallax scrolling effect.
- */
 export default class Cloud extends MovableObject {
     y = 20;
     height = 380;

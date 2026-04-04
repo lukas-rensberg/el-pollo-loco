@@ -1,10 +1,12 @@
 import DrawableObject from "./drawable-object.class.js";
 
 /**
- * Extends {@link DrawableObject} with physics (gravity, movement),
- * AABB collision detection, and a health / hurt / dead state machine.
- * All interactive game entities (character, enemies, projectiles) extend this class.
+ * Extends {@link DrawableObject} with physics (gravity, movement), collision detection, and a health / hurt / dead state machine.
+ * All interactive game entities (character, enemies, projectiles) are extensions to this class.
  */
+/** Y coordinate of the shared visual ground line (canvas bottom minus floor height). */
+export const GROUND_Y = 430;
+
 export default class MovableObject extends DrawableObject {
     speed = 0.15;
     otherDirection = false;
@@ -20,7 +22,7 @@ export default class MovableObject extends DrawableObject {
 
     /**
      * Starts a repeating gravity interval that decreases {@link speedY} each tick,
-     * pulling the object downward until it reaches ground level (y >= 129).
+     * pulling the object downward until it reaches ground level.
      * Clears any previously running gravity interval before starting a new one.
      * @returns {void}
      */
@@ -35,25 +37,12 @@ export default class MovableObject extends DrawableObject {
     }
 
     /**
-     * Draws a blue debug bounding-box rectangle around the object.
-     * Called by {@link World#addToMap} for Character, Chicken, and SmallChicken.
-     * @param {CanvasRenderingContext2D} ctx - The 2D rendering context.
-     * @returns {void}
-     */
-    drawFrame(ctx) {
-        ctx.beginPath();
-        ctx.lineWidth = "3";
-        ctx.strokeStyle = "blue";
-        ctx.rect(this.x, this.y, this.width, this.height);
-        ctx.stroke();
-    }
-
-    /**
-     * Returns true when the object is above the ground baseline (y < 129).
+     * Returns true when the object's bottom edge is above the ground baseline.
+     * Uses {@link GROUND_Y} so the check is correct for any entity height.
      * @returns {boolean}
      */
     isAboveGround() {
-        return this.y < 129;
+        return this.y + this.height < GROUND_Y;
     }
 
     /**
@@ -73,15 +62,15 @@ export default class MovableObject extends DrawableObject {
     }
 
     /**
-     * AABB (axis-aligned bounding box) collision check against another drawable object.
+     * AABB collision check using each object's hitbox (hbLeft/hbTop/hbWidth/hbHeight).
      * @param {DrawableObject} obj - The object to test for overlap.
-     * @returns {boolean} True if the two bounding boxes intersect.
+     * @returns {boolean} True if the two hitboxes intersect.
      */
     isColliding(obj) {
-        return this.x + this.width > obj.x &&
-            this.y + this.height > obj.y &&
-            this.x < obj.x + obj.width &&
-            this.y < obj.y + obj.height;
+        return this.hbLeft + this.hbWidth  > obj.hbLeft &&
+               this.hbTop  + this.hbHeight > obj.hbTop  &&
+               this.hbLeft                 < obj.hbLeft + obj.hbWidth &&
+               this.hbTop                  < obj.hbTop  + obj.hbHeight;
     }
 
     /**
@@ -96,7 +85,7 @@ export default class MovableObject extends DrawableObject {
      * Subtracts damage from {@link health} and records the timestamp of the hit
      * so {@link isHurt} can determine the hurt window.
      * Health is clamped to a minimum of 0.
-     * @param {number} damage - Amount of health points to subtract.
+     * @param {number} damage - Number of health points to subtract.
      * @returns {void}
      */
     hit(damage) {

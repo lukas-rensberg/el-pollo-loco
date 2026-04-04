@@ -1,9 +1,20 @@
 const MOBILE_BREAKPOINT = 720;
+const TABLET_BREAKPOINT = 1440;   // covers iPad Pro landscape (1366 px)
 const FULLSCREEN_MIN_WIDTH = 640;
 const FULLSCREEN_MIN_HEIGHT = 360;
 
 let shouldRequestFullscreen = false;
 let touchControlsInitialized = false;
+let autoFullscreenActive = false;   // true when fullscreen was entered automatically (mobile mode)
+
+/**
+ * Returns true on real touch devices with a tablet/phone-sized screen.
+ * Excludes desktop DevTools touch simulation at large viewports.
+ * @returns {boolean}
+ */
+function isMobileOrTablet() {
+    return isTouchDevice() && window.innerWidth <= TABLET_BREAKPOINT;
+}
 
 /**
  * Returns true when the viewport width is at or below the mobile breakpoint,
@@ -84,7 +95,7 @@ function requestFullscreenBestEffort() {
  * @returns {void}
  */
 export function tryEnterFullscreenInLandscape() {
-    if (!isMobileViewport() || isPortraitOrientation()) return;
+    if (!isLandscapePlayfieldTooSmall()) return;
 
     requestFullscreenBestEffort().finally(() => {
         updateFullscreenRequestState();
@@ -112,7 +123,7 @@ export function toggleFullscreen() {
  * @returns {void}
  */
 export function maybeRequestFullscreenFromGesture() {
-    if (!shouldRequestFullscreen) return;
+    if (!shouldRequestFullscreen || isLandscapePlayfieldTooSmall()) return;
 
     requestFullscreenBestEffort().finally(() => {
         updateFullscreenRequestState();
@@ -157,21 +168,27 @@ export function checkOrientation() {
  * @returns {void}
  */
 export function updateMobileLayoutState() {
-    const isMobile = isTouchDevice();
-    const isPortrait = isPortraitOrientation();
-    const showTouchControls = isMobile && !isPortrait;
+    const showTouchControls = isMobileOrTablet() && !isPortraitOrientation();
 
     document.body.classList.toggle('mobile-controls-visible', showTouchControls);
-
     const touchControls = document.getElementById('mobile-controls');
     if (touchControls) {
         touchControls.classList.toggle('d-none', !showTouchControls);
+    }
+
+    if (showTouchControls && !document.fullscreenElement) {
+        requestFullscreenBestEffort().then(granted => {
+            if (granted) autoFullscreenActive = true;
+        });
+    } else if (!showTouchControls && autoFullscreenActive && document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+        autoFullscreenActive = false;
     }
 }
 
 /**
  * Returns true when the user is allowed to start or continue a game in the
- * current orientation (i.e. not a mobile device in portrait mode).
+ * current orientation (i.e., not a mobile device in portrait mode).
  * @returns {boolean}
  */
 export function canStartGameInCurrentOrientation() {
@@ -189,41 +206,41 @@ export function refreshResponsiveLayout() {
     checkOrientation();
     updateMobileLayoutState();
     updateFullscreenRequestState();
-    tryEnterFullscreenInLandscape();
 }
 
 /**
- * Attaches touchstart, touchend, touchcancel, mousedown, mouseup, and mouseleave
- * listeners to a touch-control button element.
- * @param {string} buttonId - The DOM id of the button element.
- * @param {Function} onPress - Callback fired when the button is pressed.
- * @param {Function} onRelease - Callback fired when the button is released.
+ * Attaches touch event listeners (contextmenu, touchstart, touchend, touchcancel)
+ * to a button element.
+ * @param {HTMLElement} button - The button DOM element.
+ * @param {Function} onPress - Callback fired on press.
+ * @param {Function} onRelease - Callback fired on release.
  * @returns {void}
  */
-function bindTouchControl(buttonId, onPress, onRelease) {
-    const button = document.getElementById(buttonId);
-    if (!button) return;
-
-    button.addEventListener('contextmenu', (event) => {
-        event.preventDefault();
-    });
-
+function bindTouchEvents(button, onPress, onRelease) {
+    button.addEventListener('contextmenu', (event) => event.preventDefault());
     button.addEventListener('touchstart', (event) => {
         event.preventDefault();
         maybeRequestFullscreenFromGesture();
         onPress();
     }, { passive: false });
-
     button.addEventListener('touchend', (event) => {
         event.preventDefault();
         onRelease();
     }, { passive: false });
-
     button.addEventListener('touchcancel', (event) => {
         event.preventDefault();
         onRelease();
     }, { passive: false });
+}
 
+/**
+ * Attaches mouse event listeners (mousedown, mouseup, mouseleave) to a button element.
+ * @param {HTMLElement} button - The button DOM element.
+ * @param {Function} onPress - Callback fired on press.
+ * @param {Function} onRelease - Callback fired on release.
+ * @returns {void}
+ */
+function bindMouseEvents(button, onPress, onRelease) {
     button.addEventListener('mousedown', () => {
         maybeRequestFullscreenFromGesture();
         onPress();
@@ -233,30 +250,48 @@ function bindTouchControl(buttonId, onPress, onRelease) {
 }
 
 /**
+ * Attaches all press/release listeners to a touch-control button element.
+ * @param {string} buttonId - The DOM id of the button element.
+ * @param {Function} onPress - Callback fired when the button is pressed.
+ * @param {Function} onRelease - Callback fired when the button is released.
+ * @returns {void}
+ */
+function bindTouchControl(buttonId, onPress, onRelease) {
+    const button = document.getElementById(buttonId);
+    if (!button) return;
+    bindTouchEvents(button, onPress, onRelease);
+    bindMouseEvents(button, onPress, onRelease);
+}
+
+/**
  * Wires the four on-screen touch buttons (left, right, jump, throw) to the
- * shared {@link Keyboard} state object. Runs only once; subsequent calls are
- * no-ops due to the {@link touchControlsInitialized} guard.
+ * shared {@link Keyboard} state object.
+ * @param {Keyboard} keyboard - The shared input-state object.
+ * @returns {void}
+ */
+function bindAllTouchButtons(keyboard) {
+    bindTouchControl('btn-left',
+        () => keyboard.LEFT_ARROW = true,
+        () => keyboard.LEFT_ARROW = false);
+    bindTouchControl('btn-right',
+        () => keyboard.RIGHT_ARROW = true,
+        () => keyboard.RIGHT_ARROW = false);
+    bindTouchControl('btn-jump',
+        () => keyboard.SPACE = true,
+        () => keyboard.SPACE = false);
+    bindTouchControl('btn-throw',
+        () => keyboard.KEY_D = true,
+        () => keyboard.KEY_D = false);
+}
+
+/**
+ * Initialises touch controls once. Subsequent calls are no-ops due to the
+ * {@link touchControlsInitialized} guard.
  * @param {Keyboard} keyboard - The shared input-state object.
  * @returns {void}
  */
 export function initTouchControls(keyboard) {
     if (touchControlsInitialized) return;
-
-    bindTouchControl('btn-left',
-        () => keyboard.LEFT_ARROW = true,
-        () => keyboard.LEFT_ARROW = false);
-
-    bindTouchControl('btn-right',
-        () => keyboard.RIGHT_ARROW = true,
-        () => keyboard.RIGHT_ARROW = false);
-
-    bindTouchControl('btn-jump',
-        () => keyboard.SPACE = true,
-        () => keyboard.SPACE = false);
-
-    bindTouchControl('btn-throw',
-        () => keyboard.KEY_D = true,
-        () => keyboard.KEY_D = false);
-
+    bindAllTouchButtons(keyboard);
     touchControlsInitialized = true;
 }

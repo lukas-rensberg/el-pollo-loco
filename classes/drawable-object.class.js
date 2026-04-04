@@ -1,7 +1,6 @@
 /**
- * Base class for all visual game objects.
- * Handles image loading, sprite caching in {@link imgStore}, and frame-based animation.
- * All classes that need to appear on the canvas extend this class.
+ * @fileOverview Base class for all visual game objects.
+ * Handles image loading, image caching in {@link imgStore}, and frame-based animation.
  */
 export default class DrawableObject {
     x = 120;
@@ -11,6 +10,24 @@ export default class DrawableObject {
     img;
     currentImage = 0;
     imgStore = {}
+
+    /**
+     * Hitbox offsets relative to the sprite origin.
+     * hitboxW / hitboxH default to (width - hitboxX) / (height - hitboxY) when null.
+     */
+    hitboxX = 0;
+    hitboxY = 0;
+    hitboxW = null;
+    hitboxH = null;
+
+    /** Absolute hitbox left edge in world space. */
+    get hbLeft()   { return this.x + this.hitboxX; }
+    /** Absolute hitbox top edge in world space. */
+    get hbTop()    { return this.y + this.hitboxY; }
+    /** Effective hitbox width. */
+    get hbWidth()  { return this.hitboxW ?? (this.width  - this.hitboxX); }
+    /** Effective hitbox height. */
+    get hbHeight() { return this.hitboxH ?? (this.height - this.hitboxY); }
 
     /**
      * Draws the object's current image onto the canvas at its (x, y) position.
