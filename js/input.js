@@ -8,11 +8,20 @@ let touchControlsInitialized = false;
 let autoFullscreenActive = false;   // true when fullscreen was entered automatically (mobile mode)
 
 /**
- * Returns true on real touch devices with a tablet/phone-sized screen.
- * Excludes desktop DevTools touch simulation at large viewports.
+ * Returns true when the viewport is narrow enough to warrant on-screen controls.
+ * Width-only check so DevTools at e.g. 375 px works without touch simulation.
  * @returns {boolean}
  */
 function isMobileOrTablet() {
+    return window.innerWidth <= TABLET_BREAKPOINT;
+}
+
+/**
+ * Returns true on a real touch device with a tablet/phone-sized screen.
+ * Used for fullscreen auto-request (not for button visibility).
+ * @returns {boolean}
+ */
+function isRealTouchDevice() {
     return isTouchDevice() && window.innerWidth <= TABLET_BREAKPOINT;
 }
 
@@ -123,10 +132,12 @@ export function toggleFullscreen() {
  * @returns {void}
  */
 export function maybeRequestFullscreenFromGesture() {
-    if (!shouldRequestFullscreen || isLandscapePlayfieldTooSmall()) return;
+    if (!shouldRequestFullscreen) return;
 
-    requestFullscreenBestEffort().finally(() => {
-        updateFullscreenRequestState();
+    requestFullscreenBestEffort().then(granted => {
+        if (granted) autoFullscreenActive = true;
+    }).finally(() => {
+        shouldRequestFullscreen = false;
     });
 }
 
@@ -176,11 +187,9 @@ export function updateMobileLayoutState() {
         touchControls.classList.toggle('d-none', !showTouchControls);
     }
 
-    if (showTouchControls && !document.fullscreenElement) {
-        requestFullscreenBestEffort().then(granted => {
-            if (granted) autoFullscreenActive = true;
-        });
-    } else if (!showTouchControls && autoFullscreenActive && document.fullscreenElement) {
+    shouldRequestFullscreen = isRealTouchDevice() && !isPortraitOrientation() && !document.fullscreenElement;
+
+    if (!showTouchControls && autoFullscreenActive && document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
         autoFullscreenActive = false;
     }
@@ -216,37 +225,25 @@ export function refreshResponsiveLayout() {
  * @param {Function} onRelease - Callback fired on release.
  * @returns {void}
  */
-function bindTouchEvents(button, onPress, onRelease) {
-    button.addEventListener('contextmenu', (event) => event.preventDefault());
-    button.addEventListener('touchstart', (event) => {
-        event.preventDefault();
-        maybeRequestFullscreenFromGesture();
-        onPress();
-    }, { passive: false });
-    button.addEventListener('touchend', (event) => {
-        event.preventDefault();
-        onRelease();
-    }, { passive: false });
-    button.addEventListener('touchcancel', (event) => {
-        event.preventDefault();
-        onRelease();
-    }, { passive: false });
-}
-
 /**
- * Attaches mouse event listeners (mousedown, mouseup, mouseleave) to a button element.
+ * Attaches unified pointer event listeners to a button element.
+ * Works identically for mouse, touch, and DevTools touch simulation.
+ * setPointerCapture keeps the button receiving events if the pointer drifts outside.
  * @param {HTMLElement} button - The button DOM element.
  * @param {Function} onPress - Callback fired on press.
  * @param {Function} onRelease - Callback fired on release.
  * @returns {void}
  */
-function bindMouseEvents(button, onPress, onRelease) {
-    button.addEventListener('mousedown', () => {
+function bindPointerEvents(button, onPress, onRelease) {
+    button.addEventListener('contextmenu', (e) => e.preventDefault());
+    button.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        button.setPointerCapture(e.pointerId);
         maybeRequestFullscreenFromGesture();
         onPress();
     });
-    button.addEventListener('mouseup', onRelease);
-    button.addEventListener('mouseleave', onRelease);
+    button.addEventListener('pointerup',     () => onRelease());
+    button.addEventListener('pointercancel', () => onRelease());
 }
 
 /**
@@ -259,8 +256,7 @@ function bindMouseEvents(button, onPress, onRelease) {
 function bindTouchControl(buttonId, onPress, onRelease) {
     const button = document.getElementById(buttonId);
     if (!button) return;
-    bindTouchEvents(button, onPress, onRelease);
-    bindMouseEvents(button, onPress, onRelease);
+    bindPointerEvents(button, onPress, onRelease);
 }
 
 /**

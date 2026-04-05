@@ -91,6 +91,7 @@ canvas {
     display: block;
     width: 100%;
     height: 100%;
+    pointer-events: none;
 }
 
 .canvas--small-landscape {
@@ -348,6 +349,8 @@ body:not(.game-start-screen) #uiButtons {
     font-family: 'Rye', sans-serif;
     font-size: 15px;
     cursor: pointer;
+    touch-action: none;
+    user-select: none;
 }
 
 .touchButton--round {

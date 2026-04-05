@@ -228,7 +228,7 @@ function prepareGameStart() {
     winSound.pause();
     winSound.currentTime = 0;
     setWinScreenImage();
-    keyboard = new Keyboard();
+    keyboard.reset();
     hasGameStarted = true;
     playBackgroundMusic();
     generateWorld();
@@ -266,7 +266,7 @@ function backToMainMenu() {
     stopActiveGameSession();
     closeAllDialogs();
     showMainMenuScreens();
-    keyboard = new Keyboard();
+    keyboard.reset();
     hasGameStarted = false;
     stopAllSoundsOnMenu();
 }
