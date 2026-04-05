@@ -1,6 +1,7 @@
 import Character from "./character.class.js";
 import Endboss from "./endboss.class.js";
 import StatusBar from "./statusbar.class.js";
+import { GROUND_Y } from "./movable-object.class.js";
 
 export default class World {
     MAX_BOTTLES = 5;
@@ -64,6 +65,7 @@ export default class World {
 
         if (this.isStompingEnemy(enemy)) {
             enemy.kill();
+            this.character.y = GROUND_Y - this.character.height - 20;
             this.character.jump();
             this.removeEnemy(enemy);
             return;
@@ -209,7 +211,7 @@ export default class World {
      */
     isStompingEnemy(enemy) {
         const characterBottom = this.character.hbTop + this.character.hbHeight;
-        const enemyTopHitZone = enemy.hbTop + Math.max(enemy.hbHeight * 0.8, 55);
+        const enemyTopHitZone = enemy.hbTop + enemy.hbHeight * 0.4;
         return this.character.speedY < 0 &&
             this.isEnemyHittingCharacter(enemy) &&
             characterBottom >= enemy.hbTop &&

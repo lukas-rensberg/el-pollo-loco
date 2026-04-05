@@ -1,4 +1,4 @@
-import MovableObject from "./movable-object.class.js";
+import MovableObject, {GROUND_Y} from "./movable-object.class.js";
 import SalsaBottle from "./salsa-bottle.class.js";
 import { isLongIdle } from '../js/idle-timer.js';
 
@@ -9,9 +9,9 @@ import { isLongIdle } from '../js/idle-timer.js';
  */
 export default class Character extends MovableObject {
     x = 60
-    y = 130
     width = 170;
     height = 300;
+    y = GROUND_Y - this.height - 20
     hitboxX = 40;
     hitboxY = 100;
     hitboxW = 90;
