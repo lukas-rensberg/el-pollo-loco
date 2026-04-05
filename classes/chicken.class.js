@@ -3,8 +3,6 @@ import MovableObject, { GROUND_Y } from "./movable-object.class.js";
 export default class Chicken extends MovableObject {
     height = 75
     y = GROUND_Y - this.height
-    hitboxX = 0;
-    hitboxY = 0;
     width = 75
     IMAGES_WALKING = [
         "img/3_enemies_chicken/chicken_normal/1_walk/1_w.png",
