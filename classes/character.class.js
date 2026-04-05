@@ -88,6 +88,7 @@ export default class Character extends MovableObject {
     FRAME_MS = {
         jumping:  80,
         hurt:    100,
+        dead:     80,
         walking: 110,
         sleep:   200,
         idle:    150,
@@ -149,13 +150,15 @@ export default class Character extends MovableObject {
         if (now - this.lastFrameAt < ms) return;
         this.lastFrameAt = now;
 
-        if (this.isAboveGround()) {
+        if (this.isDead()) {
+            this.playAnimation(this.IMAGES_DEAD);
+        } else if (this.isAboveGround()) {
             this.playAnimation(this.IMAGES_JUMPING);
         } else if (this.isHurt()) {
             this.playAnimation(this.IMAGES_HURT);
         } else if (this.world.keyboard.RIGHT_ARROW || this.world.keyboard.LEFT_ARROW) {
             this.playAnimation(this.IMAGES_WALKING);
-        } else if (!this.isDead() && isLongIdle()) {
+        } else if (isLongIdle()) {
             this.playAnimation(this.IMAGES_IDLE);
         } else {
             this.playAnimation(this.IMAGES_IDLE_SHORT);
@@ -163,10 +166,11 @@ export default class Character extends MovableObject {
     }
 
     getCurrentFrameMs() {
+        if (this.isDead())         return this.FRAME_MS.hurt;
         if (this.isAboveGround())  return this.FRAME_MS.jumping;
         if (this.isHurt())         return this.FRAME_MS.hurt;
         if (this.world.keyboard.RIGHT_ARROW || this.world.keyboard.LEFT_ARROW) return this.FRAME_MS.walking;
-        if (!this.isDead() && isLongIdle()) return this.FRAME_MS.sleep;
+        if (isLongIdle())          return this.FRAME_MS.sleep;
         return this.FRAME_MS.idle;
     }
 
@@ -177,8 +181,10 @@ export default class Character extends MovableObject {
      */
     handleMovement() {
         if (this.isDead()) {
-            this.playAnimation(this.IMAGES_DEAD);
-            this.world.showGameOverScreen();
+            if (!this.deathTriggered) {
+                this.deathTriggered = true;
+                setTimeout(() => this.world.showGameOverScreen(), 560);
+            }
             return;
         }
         if (this.world.keyboard.SPACE && !this.isAboveGround()) {

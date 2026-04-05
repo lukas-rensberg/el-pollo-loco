@@ -357,7 +357,9 @@ export default class World {
      */
     checkIfEndbossDead() {
         const endboss = this.activeLevel.enemies.find(e => e instanceof Endboss);
-        if (endboss && endboss.health <= 0 && window.showWinScreen) window.showWinScreen();
+        if (!endboss || endboss.health > 0 || endboss.deathTriggered) return;
+        endboss.deathTriggered = true;
+        setTimeout(() => { if (window.showWinScreen) window.showWinScreen(); }, 1500);
     }
 
     /**

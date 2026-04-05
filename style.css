@@ -406,6 +406,40 @@ body:not(.game-start-screen) #uiButtons {
 }
 
 
+.impressum-card {
+    border: var(--btn-border);
+    border-radius: 12px;
+    padding: 18px;
+    max-width: 480px;
+    font-family: 'Rye', sans-serif;
+    background-color: rgba(0, 0, 0, 0.75);
+    color: #ffffff;
+
+    h2 {
+        margin-top: 0;
+        font-size: 28px;
+        text-align: center;
+    }
+
+    h3 {
+        margin-top: 24px;
+        font-size: 22px;
+    }
+
+    p {
+        margin-bottom: 12px;
+    }
+
+    a {
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: bold;
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
 footer {
     position: absolute;
     bottom: 0;
