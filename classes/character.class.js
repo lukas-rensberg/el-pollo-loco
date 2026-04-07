@@ -206,6 +206,7 @@ export default class Character extends MovableObject {
      * @returns {void}
      */
     handleThrow() {
+        if (this.isDead()) return;
         const isThrowPressed = this.world.keyboard.KEY_D;
         if (!isThrowPressed) {
             this.throwKeyPressed = false;

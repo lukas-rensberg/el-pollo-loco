@@ -79,3 +79,48 @@ body.mobile-controls-visible #mobile-controls {
 
     #gameOverActions { bottom: 10px; }
 }
+
+/* ===== Impressum responsive ===== */
+
+/* Portrait: schmale Screens */
+@media (max-width: 480px) {
+    body.impressum-page .impressum-card {
+        width: calc(100% - 24px);
+        margin: 12px 12px 0;
+        padding: 14px;
+        border-radius: 8px;
+    }
+
+    body.impressum-page .impressum-card h2 { font-size: clamp(18px, 6vw, 24px); }
+    body.impressum-page .impressum-card h3 { font-size: clamp(15px, 5vw, 20px); }
+    body.impressum-page .impressum-card p  { font-size: clamp(12px, 3.5vw, 16px); }
+    body.impressum-page .impressum-credits  { font-size: clamp(11px, 3vw, 14px); }
+}
+
+@media (max-width: 320px) {
+    body.impressum-page .impressum-card {
+        width: calc(100% - 16px);
+        margin: 8px 8px 0;
+        padding: 10px;
+    }
+}
+
+/* Landscape: kleine Höhe (Telefone im Querformat) */
+@media (orientation: landscape) and (max-height: 500px) {
+    body.impressum-page .impressum-card {
+        width: calc(100% - 32px);
+        margin: 8px 16px 50px;
+        padding: 10px 14px;
+        border-radius: 8px;
+    }
+
+    body.impressum-page .impressum-card h2 { font-size: clamp(14px, 3vh, 20px); margin-bottom: 6px; }
+    body.impressum-page .impressum-card h3 { font-size: clamp(12px, 2.5vh, 16px); margin-top: 10px; }
+    body.impressum-page .impressum-card p  { font-size: clamp(11px, 2vh, 14px); margin-bottom: 6px; }
+    body.impressum-page .impressum-credits  { font-size: clamp(10px, 1.8vh, 13px); }
+
+    body.impressum-page footer {
+        padding: 7px 0;
+        font-size: 13px;
+    }
+}

@@ -3,8 +3,8 @@ import World from "../classes/world.class.js";
 import Keyboard from "../classes/keyboard.class.js";
 import Level from "../classes/level.class.js";
 import {
-    backgroundMusic, lostSound, winSound, coinSound, bottleSound, throwSound, walkingSound, hurtSound,
-    isMuted, setMuted, applyMuteState, playBackgroundMusic
+    backgroundMusic, lostSound, winSound, coinSound, bottleSound, throwSound, walkingSound, hurtSound, chickenHitSound,
+    applyMuteState, playBackgroundMusic, toggleMute
 } from "./audio.js";
 import {
     toggleFullscreen, maybeRequestFullscreenFromGesture, checkOrientation,
@@ -17,44 +17,6 @@ let canvas;
 let world;
 let keyboard = new Keyboard();
 let hasGameStarted = false;
-
-/**
- * Saves the current mute state to localStorage, ignoring storage errors.
- * @returns {void}
- */
-function persistMuteState() {
-    try {
-        localStorage.setItem('mute', String(isMuted));
-    } catch (_) {
-        // Ignore storage errors (e.g. private mode or blocked storage).
-    }
-}
-
-/**
- * Resumes background music if a game is running and audio is unmuted.
- * @returns {void}
- */
-function resumeMusicIfNeeded() {
-    if (hasGameStarted && !isMuted && backgroundMusic.paused) {
-        backgroundMusic.play().catch(() => {});
-    }
-}
-
-/**
- * Toggles audio mute state, persists it, and resumes music if applicable.
- * @param {Event} [event] - Optional click event; blur is called to clear focus ring.
- * @returns {void}
- */
-function toggleMute(event) {
-    if (event) {
-        event.preventDefault();
-        event.currentTarget.blur();
-    }
-    setMuted(!isMuted);
-    persistMuteState();
-    applyMuteState();
-    resumeMusicIfNeeded();
-}
 
 /**
  * Opens the dialog with the given id if it is not already open.
@@ -299,7 +261,8 @@ function generateWorld() {
         bottle: bottleSound,
         throw: throwSound,
         walking: walkingSound,
-        hurt: hurtSound
+        hurt: hurtSound,
+        chickenHit: chickenHitSound
     };
 }
 
@@ -350,7 +313,7 @@ window.addEventListener("keyup", (event) => {
 window.startGame = startGame;
 window.restartGame = restartGame;
 window.backToMainMenu = backToMainMenu;
-window.toggleMute = toggleMute;
+window.toggleMute = (event) => toggleMute(event, hasGameStarted);
 window.openDialog = openDialog;
 window.closeDialog = closeDialog;
 window.showWinScreen = showWinScreen;

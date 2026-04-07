@@ -65,6 +65,7 @@ export default class World {
 
         if (this.isStompingEnemy(enemy)) {
             enemy.kill();
+            this.playSound('chickenHit');
             this.character.y = GROUND_Y - this.character.height - 20;
             this.character.jump();
             this.removeEnemy(enemy);
@@ -144,6 +145,7 @@ export default class World {
             this.statusBarEndboss.setPercentage(enemy.health);
         } else {
             enemy.kill();
+            this.playSound('chickenHit');
             this.removeEnemy(enemy);
         }
     }
